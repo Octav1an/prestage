@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEditor;
 
 public class Drawing
 {
@@ -70,4 +71,20 @@ public class Drawing
         GUI.matrix = matrix;
         GUI.color = savedColor;
     }
+
+    public static void DrawLabel(Vector3 loc, string text)
+    {
+        Vector2 guiPosition = Camera.main.WorldToScreenPoint(loc);
+        guiPosition.y = Screen.height - guiPosition.y;
+        GUI.Label(new Rect(guiPosition, new Vector2(30, 20)), text);
+    }
+
+    public static void DrawLabel(Vector3 loc, string text, float boxWidth = 30)
+    {
+        Vector2 guiPosition = Camera.main.WorldToScreenPoint(loc);
+        guiPosition.y = Screen.height - guiPosition.y;
+        GUI.Label(new Rect(guiPosition, new Vector2(boxWidth, 20)), text);
+    }
+
 }
+

@@ -1,11 +1,232 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public class MeshExtrude : MonoBehaviour {
+public class BlockPrim : MonoBehaviour {
 
-    
+    //Vertex Array
+    public Vector3[] VERTS_COLL
+    {
+        get
+        {
+            return GetComponent<MeshFilter>().mesh.vertices;
+        }
+    }
+
+    //Make them private later
+    public Vector3[] FACE_VERTS_POS_Z
+    {
+        get
+        {
+            Vector3[] face_pos_z = new Vector3[4];
+            face_pos_z[0] = VERTS_COLL[0];
+            face_pos_z[1] = VERTS_COLL[1];
+            face_pos_z[2] = VERTS_COLL[2];
+            face_pos_z[3] = VERTS_COLL[3];
+            return face_pos_z;
+        }
+    }
+    public Vector3[] FACE_VERTS_NEG_Z
+    {
+        get
+        {
+            Vector3[] face_neg_z = new Vector3[4];
+            face_neg_z[0] = VERTS_COLL[8];
+            face_neg_z[1] = VERTS_COLL[9];
+            face_neg_z[2] = VERTS_COLL[10];
+            face_neg_z[3] = VERTS_COLL[11];
+            return face_neg_z;
+        }
+    }
+    public Vector3[] FACE_VERTS_POS_X
+    {
+        get
+        {
+            Vector3[] face_pos_x = new Vector3[4];
+            face_pos_x[0] = VERTS_COLL[12];
+            face_pos_x[1] = VERTS_COLL[13];
+            face_pos_x[2] = VERTS_COLL[14];
+            face_pos_x[3] = VERTS_COLL[15];
+            return face_pos_x;
+        }
+    }
+    public Vector3[] FACE_VERTS_NEG_X
+    {
+        get
+        {
+            Vector3[] face_neg_x = new Vector3[4];
+            face_neg_x[0] = VERTS_COLL[4];
+            face_neg_x[1] = VERTS_COLL[5];
+            face_neg_x[2] = VERTS_COLL[6];
+            face_neg_x[3] = VERTS_COLL[7];
+            return face_neg_x;
+        }
+    }
+    public Vector3[] FACE_VERTS_POS_Y
+    {
+        get
+        {
+            Vector3[] face_pos_y = new Vector3[4];
+            face_pos_y[0] = VERTS_COLL[20];
+            face_pos_y[1] = VERTS_COLL[21];
+            face_pos_y[2] = VERTS_COLL[22];
+            face_pos_y[3] = VERTS_COLL[23];
+            return face_pos_y;
+        }
+    }
+    public Vector3[] FACE_VERTS_NEG_Y
+    {
+        get
+        {
+            Vector3[] face_neg_y = new Vector3[4];
+            face_neg_y[0] = VERTS_COLL[16];
+            face_neg_y[1] = VERTS_COLL[17];
+            face_neg_y[2] = VERTS_COLL[18];
+            face_neg_y[3] = VERTS_COLL[19];
+            return face_neg_y;
+        }
+    }
+    public Vector3[][] BLOCK_FACE_VERTS
+    {
+        get
+        {
+            Vector3[][] block_face_coll = new Vector3[6][];
+            block_face_coll[0] = FACE_VERTS_POS_Z;
+            block_face_coll[1] = FACE_VERTS_NEG_Z;
+            block_face_coll[2] = FACE_VERTS_POS_X;
+            block_face_coll[3] = FACE_VERTS_NEG_X;
+            block_face_coll[4] = FACE_VERTS_POS_Y;
+            block_face_coll[5] = FACE_VERTS_NEG_Y;
+            return block_face_coll;
+        }
+    }
+
+    // Faces objects
+    public GameObject FACE_POS_Z_OBJ
+    {
+        get;
+        private set;
+    }
+    public GameObject FACE_NEG_Z_OBJ
+    {
+        get;
+        private set;
+    }
+    public GameObject FACE_POS_X_OBJ
+    {
+        get;
+        private set;
+    }
+    public GameObject FACE_NEG_X_OBJ
+    {
+        get;
+        private set;
+    }
+    public GameObject FACE_POS_Y_OBJ
+    {
+        get;
+        private set;
+    }
+    public GameObject FACE_NEG_Y_OBJ
+    {
+        get;
+        private set;
+    }
+
+    public BlockFace FACE_POS_Z
+    {
+        get
+        {
+            if(FACE_POS_Z_OBJ == null)
+            {
+                throw (new CannotSetUpFaceException("Face Setup failed - FACE_POS_Z"));
+            }
+            else
+            {
+                return FACE_POS_Z_OBJ.GetComponent<BlockFace>();
+            }
+            
+        }
+    }
+    public BlockFace FACE_NEG_Z
+    {
+        get
+        {
+            if (FACE_NEG_Z_OBJ == null)
+            {
+                throw (new CannotSetUpFaceException("Face Setup failed - FACE_NEG_Z"));
+            }
+            else
+            {
+                return FACE_NEG_Z_OBJ.GetComponent<BlockFace>();
+            }
+
+        }
+    }
+    public BlockFace FACE_POS_X
+    {
+        get
+        {
+            if (FACE_POS_X_OBJ == null)
+            {
+                throw (new CannotSetUpFaceException("Face Setup failed - FACE_POS_X"));
+            }
+            else
+            {
+                return FACE_POS_X_OBJ.GetComponent<BlockFace>();
+            }
+
+        }
+    }
+    public BlockFace FACE_NEG_X
+    {
+        get
+        {
+            if (FACE_NEG_X_OBJ == null)
+            {
+                throw (new CannotSetUpFaceException("Face Setup failed - FACE_NEG_X"));
+            }
+            else
+            {
+                return FACE_NEG_X_OBJ.GetComponent<BlockFace>();
+            }
+
+        }
+    }
+    public BlockFace FACE_POS_Y
+    {
+        get
+        {
+            if (FACE_POS_Y_OBJ == null)
+            {
+                throw (new CannotSetUpFaceException("Face Setup failed - FACE_POS_Y"));
+            }
+            else
+            {
+                return FACE_POS_Y_OBJ.GetComponent<BlockFace>();
+            }
+
+        }
+    }
+    public BlockFace FACE_NEG_Y
+    {
+        get
+        {
+            if (FACE_NEG_Y_OBJ == null)
+            {
+                throw (new CannotSetUpFaceException("Face Setup failed - FACE_NEG_Y"));
+            }
+            else
+            {
+                return FACE_NEG_Y_OBJ.GetComponent<BlockFace>();
+            }
+
+        }
+    }
+
+    public bool selected = true;
 
     private Camera cam;
     Ray ray;
@@ -38,14 +259,20 @@ public class MeshExtrude : MonoBehaviour {
         }
         for(int i = 0; i < mesh.normals.Length; i++)
         {
-            Debug.Log("Vertex: " + i + "  Normal: " + mesh.normals[i]);
+            //Debug.Log("Vertex: " + i + "  Normal: " + mesh.normals[i]);
         }
-        print(vertices.Length);
+        SetUpIndividualFaces();
     }
 	
 	// Update is called once per frame
 	void Update ()
     {
+        // Here run methods when the block is selected only
+        if (selected)
+        {
+            UpdateFaceVerts();
+        }
+
 
         if (Input.GetKey(KeyCode.R))
         {
@@ -61,11 +288,6 @@ public class MeshExtrude : MonoBehaviour {
             mesh.vertices = vertices;
 
         }
-        //print(transform.TransformPoint(vertices[0]));
-        //print(mesh.normals[0]);
-        //print(Camera.main.transform.forward);
-        //print(Vector3.ProjectOnPlane(mesh.normals[0], Camera.main.transform.forward));
-        //print(Vector3.Angle(mesh.normals[0], Camera.main.transform.forward));
         
         if (Input.GetMouseButtonDown(0))
         {
@@ -80,7 +302,7 @@ public class MeshExtrude : MonoBehaviour {
                 mouseDown = true;
             }
         }
-
+        
         if (Input.GetMouseButtonUp(0))
         {
             mouseDown = false;
@@ -244,4 +466,42 @@ public class MeshExtrude : MonoBehaviour {
         //mesh.RecalculateBounds();
         mesh.triangles = triangels;
     }
+
+    private void UpdateFaceVerts()
+    {
+        // Assign Vertices to each face
+        FACE_POS_Z.faceVerts = FACE_VERTS_POS_Z;
+        FACE_NEG_Z.faceVerts = FACE_VERTS_NEG_Z;
+        FACE_POS_X.faceVerts = FACE_VERTS_POS_X;
+        FACE_NEG_X.faceVerts = FACE_VERTS_NEG_X;
+        FACE_POS_Y.faceVerts = FACE_VERTS_POS_Y;
+        FACE_NEG_Y.faceVerts = FACE_VERTS_NEG_Y;
+    }
+
+    //----------------------------------------------------------------------------------------------
+    private void SetUpIndividualFaces()
+    {
+        // Find and assign face objects to properties in this class.
+        try
+        {
+            FACE_POS_Z_OBJ = transform.Find("FACE_POS_Z".ToLower()).gameObject;
+            FACE_NEG_Z_OBJ = transform.Find("FACE_NEG_Z".ToLower()).gameObject;
+            FACE_POS_X_OBJ = transform.Find("FACE_POS_X".ToLower()).gameObject;
+            FACE_NEG_X_OBJ = transform.Find("FACE_NEG_X".ToLower()).gameObject;
+            FACE_POS_Y_OBJ = transform.Find("FACE_POS_Y".ToLower()).gameObject;
+            FACE_NEG_Y_OBJ = transform.Find("FACE_NEG_Y".ToLower()).gameObject;
+        }
+        catch (NullReferenceException e)
+        {
+            Debug.Log("Problem with Face setup in BlockPrim/SetUpIndividualFaces()");
+        }
+        // Assign Vertices to each face
+        FACE_POS_Z.faceVerts = FACE_VERTS_POS_Z;
+        FACE_NEG_Z.faceVerts = FACE_VERTS_NEG_Z;
+        FACE_POS_X.faceVerts = FACE_VERTS_POS_X;
+        FACE_NEG_X.faceVerts = FACE_VERTS_NEG_X;
+        FACE_POS_Y.faceVerts = FACE_VERTS_POS_Y;
+        FACE_NEG_Y.faceVerts = FACE_VERTS_NEG_Y;
+    }
+
 }
