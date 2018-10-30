@@ -6,7 +6,7 @@ using UnityEditor;
 
 public class BlockPrim : MonoBehaviour {
 
-    //Vertex Array
+    //Vertex Array, use only geting the vertices. This property cannot rewrite them.
     public Vector3[] VERTS_COLL
     {
         get
@@ -226,6 +226,107 @@ public class BlockPrim : MonoBehaviour {
         }
     }
 
+    public int[][] vertex_index_con = new int[][]
+    {
+        new int[] {0, 7, 21},
+        new int[] {1, 6, 19},
+        new int[] {2, 13, 18},
+        new int[] {3, 12, 22},
+        new int[] {8, 15, 23},
+        new int[] {9, 14, 17},
+        new int[] {10, 5, 16},
+        new int[] {11, 4, 20}
+    };
+    // This represend collection of vertices that share the same coordinate. Think about them as Block's 8 vertices.
+    public int[] VERT_INDEX_CON_0
+    {
+        get
+        {
+            int[] vert_index_con = new int[3];
+            vert_index_con[0] = 0;
+            vert_index_con[1] = 7;
+            vert_index_con[2] = 21;
+            return vert_index_con;
+        }
+    }
+    public int[] VERT_INDEX_CON_1
+    {
+        get
+        {
+            int[] vert_index_con = new int[3];
+            vert_index_con[0] = 1;
+            vert_index_con[1] = 6;
+            vert_index_con[2] = 19;
+            return vert_index_con;
+        }
+    }
+    public Vector3[] VERT_CON_2
+    {
+        get
+        {
+            Vector3[] vert_con = new Vector3[3];
+            vert_con[0] = VERTS_COLL[2];
+            vert_con[1] = VERTS_COLL[13];
+            vert_con[2] = VERTS_COLL[18];
+            return vert_con;
+        }
+    }
+    public Vector3[] VERT_CON_3
+    {
+        get
+        {
+            Vector3[] vert_con = new Vector3[3];
+            vert_con[0] = VERTS_COLL[3];
+            vert_con[1] = VERTS_COLL[12];
+            vert_con[2] = VERTS_COLL[22];
+            return vert_con;
+        }
+    }
+    public Vector3[] VERT_CON_4
+    {
+        get
+        {
+            Vector3[] vert_con = new Vector3[3];
+            vert_con[0] = VERTS_COLL[8];
+            vert_con[1] = VERTS_COLL[15];
+            vert_con[2] = VERTS_COLL[23];
+            return vert_con;
+        }
+    }
+    public Vector3[] VERT_CON_5
+    {
+        get
+        {
+            Vector3[] vert_con = new Vector3[3];
+            vert_con[0] = VERTS_COLL[9];
+            vert_con[1] = VERTS_COLL[14];
+            vert_con[2] = VERTS_COLL[17];
+            return vert_con;
+        }
+    }
+    public Vector3[] VERT_CON_6
+    {
+        get
+        {
+            Vector3[] vert_con = new Vector3[3];
+            vert_con[0] = VERTS_COLL[10];
+            vert_con[1] = VERTS_COLL[5];
+            vert_con[2] = VERTS_COLL[16];
+            return vert_con;
+        }
+    }
+    public Vector3[] VERT_CON_7
+    {
+        get
+        {
+            Vector3[] vert_con = new Vector3[3];
+            vert_con[0] = VERTS_COLL[11];
+            vert_con[1] = VERTS_COLL[4];
+            vert_con[2] = VERTS_COLL[20];
+            return vert_con;
+        }
+    }
+
     public bool selected = true;
 
     private Camera cam;
@@ -235,9 +336,19 @@ public class BlockPrim : MonoBehaviour {
     float deltaLoc = 0f;
     bool mouseDown = false;
 
-    Mesh mesh;
-    Vector3[] vertices;
+    /// <summary>
+    /// Block's mesh component.
+    /// </summary>
+    public Mesh block_mesh;
+    /// <summary>
+    /// Block mesh vertices, use this to transform vertices location.
+    /// </summary>
+    public Vector3[] vertices;
+    /// <summary>
+    /// Saved block's vertices, used to create the movement vector.
+    /// </summary>
     Vector3[] verticesSaved;
+    public String colliderName;
 
     float anglePrj = 0;
     Vector2 projNorm = new Vector2();
@@ -249,15 +360,15 @@ public class BlockPrim : MonoBehaviour {
         cam = Camera.main;
         lastSavedLoc = new Vector3();
         //deltaLoc = new Vector3();
-        mesh = GetComponent<MeshFilter>().mesh;
-        vertices = mesh.vertices;
-        verticesSaved = mesh.vertices;
-        triangels = mesh.triangles;
+        block_mesh = GetComponent<MeshFilter>().mesh;
+        vertices = block_mesh.vertices;
+        verticesSaved = block_mesh.vertices;
+        triangels = block_mesh.triangles;
         foreach (Vector3 vertex in vertices)
         {
             //Debug.Log(vertex);
         }
-        for(int i = 0; i < mesh.normals.Length; i++)
+        for(int i = 0; i < block_mesh.normals.Length; i++)
         {
             //Debug.Log("Vertex: " + i + "  Normal: " + mesh.normals[i]);
         }
@@ -273,32 +384,34 @@ public class BlockPrim : MonoBehaviour {
             UpdateFaceVerts();
         }
 
-
-        if (Input.GetKey(KeyCode.R))
+        if (Input.GetKey(KeyCode.T))
         {
-            Vector3 moveDir = mesh.normals[0];
-            vertices[0] += moveDir * 0.05f;
-            vertices[1] += moveDir * 0.05f;
-            vertices[2] += moveDir * 0.05f;
-            vertices[3] += moveDir * 0.05f;
+            Vector3 moveDir = block_mesh.normals[0];
 
-            //vertices[8] += moveDir * 0.05f;
-            //vertices[9] += moveDir * 0.05f;
-
-            mesh.vertices = vertices;
+            for (int i = 0; i < 3; i++)
+            {
+                //vertices[i] += moveDir * 0.05f;
+                vertices[vertex_index_con[0][i]] += moveDir * 0.05f;
+                vertices[vertex_index_con[1][i]] += moveDir * 0.05f;
+                vertices[vertex_index_con[2][i]] += moveDir * 0.05f;
+                vertices[vertex_index_con[3][i]] += moveDir * 0.05f;
+            }
+            // Update block vertices with freshly moved ones.
+            block_mesh.vertices = vertices;
 
         }
-        
+
         if (Input.GetMouseButtonDown(0))
         {
             
             lastSavedLoc = Input.mousePosition;
-            verticesSaved = mesh.vertices;
+            verticesSaved = block_mesh.vertices;
 
             ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
             {
                 //print(hit.collider.name);
+                colliderName = hit.collider.name;
                 mouseDown = true;
             }
         }
@@ -306,13 +419,14 @@ public class BlockPrim : MonoBehaviour {
         if (Input.GetMouseButtonUp(0))
         {
             mouseDown = false;
+            colliderName = "";
         }
 
         //print(mesh.normals[6]);
 
         if (Input.GetMouseButton(0))
         {
-            Vector3 projected = Vector3.ProjectOnPlane(mesh.normals[0], Camera.main.transform.forward);
+            Vector3 projected = Vector3.ProjectOnPlane(block_mesh.normals[0], Camera.main.transform.forward);
             projNorm = new Vector2(100 + (projected.x * 30), 100 + (projected.y * 30));
 
             Vector3 mouseLoc = Input.mousePosition;
@@ -394,7 +508,7 @@ public class BlockPrim : MonoBehaviour {
 
     void MoveFace(float moveDist)
     {
-        Vector3 moveDir = mesh.normals[0].normalized * moveDist / 100;
+        Vector3 moveDir = block_mesh.normals[0].normalized * moveDist / 100;
         vertices[0] = verticesSaved[0] + moveDir;
         vertices[1] = verticesSaved[1] + moveDir;
         vertices[2] = verticesSaved[2] + moveDir;
@@ -411,14 +525,14 @@ public class BlockPrim : MonoBehaviour {
 
         vertices[22] = verticesSaved[22] + moveDir;
         vertices[23] = verticesSaved[23] + moveDir;
-        mesh.vertices = vertices;
+        block_mesh.vertices = vertices;
         GameObject colliderFace = this.transform.Find("Face_0").gameObject;
         colliderFace.transform.position = transform.TransformPoint((vertices[0] + vertices[1] + vertices[2] + vertices[3]) / 4);
     }
 
     void MoveFace(Vector3 vec)
     {
-        Vector3 moveDir = mesh.normals[0].normalized * vec.magnitude / 100;
+        Vector3 moveDir = block_mesh.normals[0].normalized * vec.magnitude / 100;
         vertices[0] = verticesSaved[0] + moveDir;
         vertices[1] = verticesSaved[1] + moveDir;
         vertices[2] = verticesSaved[2] + moveDir;
@@ -435,7 +549,7 @@ public class BlockPrim : MonoBehaviour {
 
         vertices[22] = verticesSaved[22] + moveDir;
         vertices[23] = verticesSaved[23] + moveDir;
-        mesh.vertices = vertices;
+        block_mesh.vertices = vertices;
         GameObject colliderFace = this.transform.Find("Face_0").gameObject;
         colliderFace.transform.position = transform.TransformPoint((vertices[0] + vertices[1] + vertices[2] + vertices[3]) / 4);
     }
@@ -462,9 +576,9 @@ public class BlockPrim : MonoBehaviour {
         vertices[8] -= Vector3.back * 0.05f;
         vertices[9] -= Vector3.back * 0.05f;
         //print(Vector3.up * 0.2f);
-        mesh.vertices = vertices;
+        block_mesh.vertices = vertices;
         //mesh.RecalculateBounds();
-        mesh.triangles = triangels;
+        block_mesh.triangles = triangels;
     }
 
     private void UpdateFaceVerts()
@@ -476,9 +590,17 @@ public class BlockPrim : MonoBehaviour {
         FACE_NEG_X.faceVerts = FACE_VERTS_NEG_X;
         FACE_POS_Y.faceVerts = FACE_VERTS_POS_Y;
         FACE_NEG_Y.faceVerts = FACE_VERTS_NEG_Y;
+
+        // Assign FaceNormals (Update)
+        FACE_POS_Z.faceNormal = block_mesh.normals[0];
+        FACE_NEG_Z.faceNormal = block_mesh.normals[8];
+        FACE_POS_X.faceNormal = block_mesh.normals[12];
+        FACE_NEG_X.faceNormal = block_mesh.normals[4];
+        FACE_POS_Y.faceNormal = block_mesh.normals[20];
+        FACE_NEG_Y.faceNormal = block_mesh.normals[16];
     }
 
-    //----------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------
     private void SetUpIndividualFaces()
     {
         // Find and assign face objects to properties in this class.
@@ -495,13 +617,31 @@ public class BlockPrim : MonoBehaviour {
         {
             Debug.Log("Problem with Face setup in BlockPrim/SetUpIndividualFaces()");
         }
-        // Assign Vertices to each face
+        // Assign Vertices to each face (Update)
         FACE_POS_Z.faceVerts = FACE_VERTS_POS_Z;
         FACE_NEG_Z.faceVerts = FACE_VERTS_NEG_Z;
         FACE_POS_X.faceVerts = FACE_VERTS_POS_X;
         FACE_NEG_X.faceVerts = FACE_VERTS_NEG_X;
         FACE_POS_Y.faceVerts = FACE_VERTS_POS_Y;
         FACE_NEG_Y.faceVerts = FACE_VERTS_NEG_Y;
+
+        // Assign FaceNormals (Update)
+        FACE_POS_Z.faceNormal = block_mesh.normals[0];
+        FACE_NEG_Z.faceNormal = block_mesh.normals[8];
+        FACE_POS_X.faceNormal = block_mesh.normals[12];
+        FACE_NEG_X.faceNormal = block_mesh.normals[4];
+        FACE_POS_Y.faceNormal = block_mesh.normals[20];
+        FACE_NEG_Y.faceNormal = block_mesh.normals[16];
+
+        // Assign vertexIndexContainer - these are the arrays indexes that hold vertices of the block. (One Time assignment)
+        FACE_POS_Z.vertexIndexCon = new int[] { 0, 1, 2, 3 };
+        FACE_NEG_Z.vertexIndexCon = new int[] { 4, 5, 6, 7 };
+        FACE_POS_X.vertexIndexCon = new int[] { 2, 3, 4, 5 };
+        FACE_NEG_X.vertexIndexCon = new int[] { 0, 1, 6, 7 };
+        FACE_POS_Y.vertexIndexCon = new int[] { 0, 3, 4, 7 };
+        FACE_NEG_Y.vertexIndexCon = new int[] { 1, 2, 5, 6 };
+
+
     }
 
 }
