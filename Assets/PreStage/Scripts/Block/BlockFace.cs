@@ -12,18 +12,25 @@ public class BlockFace : MonoBehaviour {
             return transform.GetComponentInParent<BlockPrim>();
         }
     }
+    public Vector3[] faceVerts;
     /// <summary>
     /// Face center location for the local center. To get the global position call transform.position
     /// </summary>
-    private Vector3 FACE_CENTER
+    public Vector3 FACE_CENTER
     {
         get
         {
-            Vector3 face_center = (faceVerts[0] + faceVerts[1] + faceVerts[2] + faceVerts[3]) / 4;
-            return face_center;
+            if(faceVerts.Length == 4)
+            {
+                Vector3 face_center = (faceVerts[0] + faceVerts[1] + faceVerts[2] + faceVerts[3]) / 4;
+                return face_center;
+            }
+            else
+            {
+                return new Vector3();
+            }
         }
     }
-    public Vector3[] faceVerts;
     /// <summary>
     /// These are the 4 container indexes that hold face's vertices and the adjacent face's verts that
     /// share the same location.
@@ -35,13 +42,13 @@ public class BlockFace : MonoBehaviour {
 	void Start () {
         //print(BLOCK_COMP.VERTS_COLL.Length);
         //if(BLOCK_COMP.)
-        if(this.name == "face_pos_z")
+        if(this.name == "face_neg_y")
         {
             foreach(int vert in vertexIndexCon)
             {
                 //print(vert);
             }
-            //print("Center: " + vertexIndexCon);
+            //print("Center: " + FACE_CENTER);
         }
 	}
 	
@@ -52,6 +59,7 @@ public class BlockFace : MonoBehaviour {
         {
             MoveFace(BLOCK_COMP.colliderName);
         }
+        //if (this.name == "face_neg_y") print("Center: " + FACE_CENTER);
     }
 
     //---------------------------------------------------------------------------------------------------

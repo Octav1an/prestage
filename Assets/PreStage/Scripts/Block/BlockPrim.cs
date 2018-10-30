@@ -332,6 +332,15 @@ public class BlockPrim : MonoBehaviour {
     private Camera cam;
     Ray ray;
     RaycastHit hit;
+    /// <summary>
+    /// Plane that is used to move the object, it is equal to block centroid.
+    /// </summary>
+    private Plane movePlane;
+    /// <summary>
+    /// Saved the location of intersection between mouse ray with movePlane. Used for moving the block.
+    /// </summary>
+    private Vector3 savedMoveTarget;
+
     Vector3 lastSavedLoc;
     float deltaLoc = 0f;
     bool mouseDown = false;
@@ -347,23 +356,27 @@ public class BlockPrim : MonoBehaviour {
     /// <summary>
     /// Saved block's vertices, used to create the movement vector.
     /// </summary>
-    Vector3[] verticesSaved;
+    private Vector3[] verticesSaved;
+    private Vector3 savedBlockLoc;
     public String colliderName;
 
     float anglePrj = 0;
     Vector2 projNorm = new Vector2();
 
-    int[] triangels;
 
     // Use this for initialization
     void Start () {
+        //--------------------------------------------
         cam = Camera.main;
-        lastSavedLoc = new Vector3();
-        //deltaLoc = new Vector3();
+        savedBlockLoc = this.transform.position;
         block_mesh = GetComponent<MeshFilter>().mesh;
         vertices = block_mesh.vertices;
         verticesSaved = block_mesh.vertices;
-        triangels = block_mesh.triangles;
+        savedMoveTarget = SetTarggetPosition();
+        movePlane = new Plane(Vector3.up, this.transform.position);
+        SetUpIndividualFaces();
+        //--------------------------------------------
+        lastSavedLoc = new Vector3();
         foreach (Vector3 vertex in vertices)
         {
             //Debug.Log(vertex);
@@ -372,7 +385,6 @@ public class BlockPrim : MonoBehaviour {
         {
             //Debug.Log("Vertex: " + i + "  Normal: " + mesh.normals[i]);
         }
-        SetUpIndividualFaces();
     }
 	
 	// Update is called once per frame
@@ -382,8 +394,14 @@ public class BlockPrim : MonoBehaviour {
         if (selected)
         {
             UpdateFaceVerts();
+            OnMouseUpGeneral();
+            OnMouseDownGeneral();
+            // Here run everything that should run on mouse down.
+            if (Input.GetMouseButton(0))
+            {
+                MoveBlock();
+            }
         }
-
         if (Input.GetKey(KeyCode.T))
         {
             Vector3 moveDir = block_mesh.normals[0];
@@ -410,19 +428,14 @@ public class BlockPrim : MonoBehaviour {
             ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
             {
-                //print(hit.collider.name);
+                //print(hit.point);
                 colliderName = hit.collider.name;
                 mouseDown = true;
             }
         }
-        
-        if (Input.GetMouseButtonUp(0))
-        {
-            mouseDown = false;
-            colliderName = "";
-        }
 
         //print(mesh.normals[6]);
+        //print(Manager.GROUND);
 
         if (Input.GetMouseButton(0))
         {
@@ -456,15 +469,57 @@ public class BlockPrim : MonoBehaviour {
 
 
 
+    //---------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Method that is activated once when the mouse right click is released and the block is selected.
+    /// </summary>
+    private void OnMouseUpGeneral()
+    {
+        if (Input.GetMouseButtonUp(0))
+        {
+            mouseDown = false;
+            colliderName = "";
+            //savedBlockLoc = this.transform.position;
+            //savedTarget = targetPos;
+        }
+        
+    }
+
+    //---------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Method that is activated once when the mouse right click is pressed and the block is selected.
+    /// </summary>
+    private void OnMouseDownGeneral()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            savedBlockLoc = this.transform.position;
+            savedMoveTarget = SetTarggetPosition();
+        } 
+    }
+
     void OnGUI()
     {
         GUI.color = new Color(1f, 0.5f, 0f, 1f);
         GUI.Label(new Rect(20, 5, 100, 100), anglePrj.ToString());
+        Vector3 mouseLoc = Manager.CHANGE_IN_MOUSE_LOC;
+        GUI.Label(new Rect(20, 20, 220, 100), ("Diff mouse loc - " + "x: " + mouseLoc.x + " y: " + mouseLoc.y + " z: " + mouseLoc.z));
+        Vector3 mouseLocWorld = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 1));
+        //Vector3 mouseLocWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        GUI.Label(new Rect(20, 35, 400, 100), ("Diff_m_world - " + "x: " + mouseLocWorld.x + " y: " + mouseLocWorld.y + " z: " + mouseLocWorld.z));
 
-        Vector2 vec = new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
-        Drawing.DrawLine(new Vector2(100, 100), projNorm, Color.red, 2);
+        Vector2 correctedMousePosition = new Vector2((float)Input.mousePosition.x, (float)Screen.height - (float)Input.mousePosition.y);
+        Vector2 correctedSavedMousePosition = new Vector2((float)Manager.savedMouseLoc.x, (float)Screen.height - (float)Manager.savedMouseLoc.y);
 
-        
+        //Drawing.DrawLine(new Vector2(100, 100), projNorm, Color.red, 2);
+
+        if (correctedSavedMousePosition.x != 0 && correctedSavedMousePosition.y - Screen.height != 0)
+        {
+            //Drawing.DrawLine(correctedSavedMousePosition, correctedMousePosition, Color.red, 2);
+        }
+
+
+
         GUI.color = Color.red;
         DrawLabel(vertices[0], "V_0");
         DrawLabel(vertices[1], "V_1");
@@ -505,6 +560,38 @@ public class BlockPrim : MonoBehaviour {
 
     }
 
+    //---------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Method that returns the intersection point between object's middle plane and a ray from mouse position.
+    /// </summary>
+    /// <returns></returns>
+    Vector3 SetTarggetPosition()
+    {
+        Ray rayPlane = Camera.main.ScreenPointToRay(Input.mousePosition);
+        float point = 0f;
+
+        if (movePlane.Raycast(rayPlane, out point))
+        {
+            return rayPlane.GetPoint(point);
+        }
+        else
+        {
+            return new Vector3();
+        }
+    }
+
+    //---------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Move the entire block, when click and drag on the top face.
+    /// </summary>
+    private void MoveBlock()
+    {
+        if(colliderName == "face_pos_y")
+        {
+            //if(Input.GetMouseButton(0)) SetTarggetPosition();
+            transform.position = savedBlockLoc + (SetTarggetPosition() - savedMoveTarget);
+        }
+    }
 
     void MoveFace(float moveDist)
     {
@@ -564,21 +651,6 @@ public class BlockPrim : MonoBehaviour {
         Vector2 guiPosition = Camera.main.WorldToScreenPoint(transform.TransformPoint(loc));
         guiPosition.y = Screen.height - guiPosition.y;
         GUI.Label(new Rect(guiPosition, new Vector2(30, 20)), text);
-    }
-
-    void MoveTest()
-    {
-        vertices[0] -= Vector3.back * 0.05f;
-        vertices[1] -= Vector3.back * 0.05f;
-        vertices[2] -= Vector3.back * 0.05f;
-        vertices[3] -= Vector3.back * 0.05f;
-
-        vertices[8] -= Vector3.back * 0.05f;
-        vertices[9] -= Vector3.back * 0.05f;
-        //print(Vector3.up * 0.2f);
-        block_mesh.vertices = vertices;
-        //mesh.RecalculateBounds();
-        block_mesh.triangles = triangels;
     }
 
     private void UpdateFaceVerts()
