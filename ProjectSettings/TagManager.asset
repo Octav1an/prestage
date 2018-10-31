@@ -3,7 +3,11 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - BlockFace
+  - BlockPrim
+  - Manager
+  - Ground
   layers:
   - Default
   - TransparentFX
