@@ -743,6 +743,30 @@ Prefab:
       propertyPath: m_LocalPosition.y
       value: -0.5
       objectReference: {fileID: 0}
+    - target: {fileID: 114561213437890566, guid: 38c9625836d829e4f9bac6b61410ab3f,
+        type: 2}
+      propertyPath: targetObj
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 114561213437890566, guid: 38c9625836d829e4f9bac6b61410ab3f,
+        type: 2}
+      propertyPath: prjTargetObj
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4297336382146030, guid: 38c9625836d829e4f9bac6b61410ab3f, type: 2}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114561213437890566, guid: 38c9625836d829e4f9bac6b61410ab3f,
+        type: 2}
+      propertyPath: faceWorldCenter
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 114110801345872876, guid: 38c9625836d829e4f9bac6b61410ab3f,
+        type: 2}
+      propertyPath: projectedTarget
+      value: 
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 38c9625836d829e4f9bac6b61410ab3f, type: 2}
   m_IsPrefabParent: 0
@@ -903,8 +927,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selected: 1
+  savedMoveTarget: {x: 0, y: 0, z: 0}
   block_mesh: {fileID: 0}
   vertices: []
+  verticesSaved: []
   colliderName: 
 --- !u!65 &2006403669
 BoxCollider:

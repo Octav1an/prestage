@@ -15,7 +15,7 @@ public class BlockPrim : MonoBehaviour {
         }
     }
 
-    //Make them private later
+    // Make them private later.
     public Vector3[] FACE_VERTS_POS_Z
     {
         get
@@ -103,7 +103,7 @@ public class BlockPrim : MonoBehaviour {
         }
     }
 
-    // Faces objects
+    // Faces objects.
     public GameObject FACE_POS_Z_OBJ
     {
         get;
@@ -135,6 +135,7 @@ public class BlockPrim : MonoBehaviour {
         private set;
     }
 
+    // Face Script components.
     public BlockFace FACE_POS_Z
     {
         get
@@ -225,7 +226,27 @@ public class BlockPrim : MonoBehaviour {
 
         }
     }
+    /// <summary>
+    /// Stores all BlockFace components of this Block.
+    /// Used to easier update or get data in for loops.
+    /// </summary>
+    public BlockFace[] FACE_COLL
+    {
+        get
+        {
+            BlockFace[] coll = new BlockFace[] {
+                FACE_POS_Z, FACE_NEG_Z,
+                FACE_POS_X, FACE_NEG_X,
+                FACE_POS_Y, FACE_NEG_Y
+            };
+            return coll;
+        }
+    }
 
+    /// <summary>
+    /// This represend collection of indexes for vertices that share the same coordinate. Think about them as Block's 8 vertices.
+    /// Check Rhino file to see to which container each vertex belongs.
+    /// </summary>
     public int[][] vertex_index_con = new int[][]
     {
         new int[] {0, 7, 21},
@@ -237,99 +258,9 @@ public class BlockPrim : MonoBehaviour {
         new int[] {10, 5, 16},
         new int[] {11, 4, 20}
     };
-    // This represend collection of vertices that share the same coordinate. Think about them as Block's 8 vertices.
-    public int[] VERT_INDEX_CON_0
-    {
-        get
-        {
-            int[] vert_index_con = new int[3];
-            vert_index_con[0] = 0;
-            vert_index_con[1] = 7;
-            vert_index_con[2] = 21;
-            return vert_index_con;
-        }
-    }
-    public int[] VERT_INDEX_CON_1
-    {
-        get
-        {
-            int[] vert_index_con = new int[3];
-            vert_index_con[0] = 1;
-            vert_index_con[1] = 6;
-            vert_index_con[2] = 19;
-            return vert_index_con;
-        }
-    }
-    public Vector3[] VERT_CON_2
-    {
-        get
-        {
-            Vector3[] vert_con = new Vector3[3];
-            vert_con[0] = VERTS_COLL[2];
-            vert_con[1] = VERTS_COLL[13];
-            vert_con[2] = VERTS_COLL[18];
-            return vert_con;
-        }
-    }
-    public Vector3[] VERT_CON_3
-    {
-        get
-        {
-            Vector3[] vert_con = new Vector3[3];
-            vert_con[0] = VERTS_COLL[3];
-            vert_con[1] = VERTS_COLL[12];
-            vert_con[2] = VERTS_COLL[22];
-            return vert_con;
-        }
-    }
-    public Vector3[] VERT_CON_4
-    {
-        get
-        {
-            Vector3[] vert_con = new Vector3[3];
-            vert_con[0] = VERTS_COLL[8];
-            vert_con[1] = VERTS_COLL[15];
-            vert_con[2] = VERTS_COLL[23];
-            return vert_con;
-        }
-    }
-    public Vector3[] VERT_CON_5
-    {
-        get
-        {
-            Vector3[] vert_con = new Vector3[3];
-            vert_con[0] = VERTS_COLL[9];
-            vert_con[1] = VERTS_COLL[14];
-            vert_con[2] = VERTS_COLL[17];
-            return vert_con;
-        }
-    }
-    public Vector3[] VERT_CON_6
-    {
-        get
-        {
-            Vector3[] vert_con = new Vector3[3];
-            vert_con[0] = VERTS_COLL[10];
-            vert_con[1] = VERTS_COLL[5];
-            vert_con[2] = VERTS_COLL[16];
-            return vert_con;
-        }
-    }
-    public Vector3[] VERT_CON_7
-    {
-        get
-        {
-            Vector3[] vert_con = new Vector3[3];
-            vert_con[0] = VERTS_COLL[11];
-            vert_con[1] = VERTS_COLL[4];
-            vert_con[2] = VERTS_COLL[20];
-            return vert_con;
-        }
-    }
-
+    
     public bool selected = true;
 
-    private Camera cam;
     Ray ray;
     RaycastHit hit;
     /// <summary>
@@ -339,11 +270,17 @@ public class BlockPrim : MonoBehaviour {
     /// <summary>
     /// Saved the location of intersection between mouse ray with movePlane. Used for moving the block.
     /// </summary>
-    private Vector3 savedMoveTarget;
-
-    Vector3 lastSavedLoc;
-    float deltaLoc = 0f;
-    bool mouseDown = false;
+    public Vector3 savedMoveTarget;
+    /// <summary>
+    /// Intersection position between plane and mouse ray that is used for horizontal movements of block and faces.
+    /// </summary>
+    public Vector3 TARGET_WORLD
+    {
+        get
+        {
+            return SetTarggetPosition();
+        }
+    }
 
     /// <summary>
     /// Block's mesh component.
@@ -356,18 +293,20 @@ public class BlockPrim : MonoBehaviour {
     /// <summary>
     /// Saved block's vertices, used to create the movement vector.
     /// </summary>
-    private Vector3[] verticesSaved;
+    public Vector3[] verticesSaved;
+    /// <summary>
+    /// Saved location of the block. It is saved during MouseDown event.
+    /// </summary>
     private Vector3 savedBlockLoc;
+    /// <summary>
+    /// String that stores the name of the hit collider untill the mouse is released.
+    /// </summary>
     public String colliderName;
-
-    float anglePrj = 0;
-    Vector2 projNorm = new Vector2();
 
 
     // Use this for initialization
     void Start () {
         //--------------------------------------------
-        cam = Camera.main;
         savedBlockLoc = this.transform.position;
         block_mesh = GetComponent<MeshFilter>().mesh;
         vertices = block_mesh.vertices;
@@ -376,14 +315,9 @@ public class BlockPrim : MonoBehaviour {
         movePlane = new Plane(Vector3.up, this.transform.position);
         SetUpIndividualFaces();
         //--------------------------------------------
-        lastSavedLoc = new Vector3();
         foreach (Vector3 vertex in vertices)
         {
             //Debug.Log(vertex);
-        }
-        for(int i = 0; i < block_mesh.normals.Length; i++)
-        {
-            //Debug.Log("Vertex: " + i + "  Normal: " + mesh.normals[i]);
         }
     }
 	
@@ -421,55 +355,17 @@ public class BlockPrim : MonoBehaviour {
 
         if (Input.GetMouseButtonDown(0))
         {
-            
-            lastSavedLoc = Input.mousePosition;
-            verticesSaved = block_mesh.vertices;
-
             ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit))
             {
-                //print(hit.point);
                 colliderName = hit.collider.name;
-                mouseDown = true;
             }
         }
-
-        //print(mesh.normals[6]);
-        //print(Manager.GROUND);
-
-        if (Input.GetMouseButton(0))
-        {
-            Vector3 projected = Vector3.ProjectOnPlane(block_mesh.normals[0], Camera.main.transform.forward);
-            projNorm = new Vector2(100 + (projected.x * 30), 100 + (projected.y * 30));
-
-            Vector3 mouseLoc = Input.mousePosition;
-            deltaLoc = mouseLoc.x - lastSavedLoc.x;
-            Vector3 moveVec = (mouseLoc - lastSavedLoc).normalized;
-            Vector3 moveVecProject = Vector3.ProjectOnPlane(moveVec, Camera.main.transform.forward);
-            anglePrj = Vector3.Angle(moveVecProject, projected);
-            
-            if (mouseDown)
-            {
-                if (projected.x < 0)
-                {
-                    //MoveFace(deltaLoc);
-                    //MoveFace(mouseLoc - lastSavedLoc);
-                }
-                else
-                {
-                    //MoveFace(-deltaLoc);
-                    //MoveFace(mouseLoc - lastSavedLoc);
-                }
-                
-                //print(deltaLoc);
-            }
-        }
-
     }
 
 
 
-    //---------------------------------------------------------------------------------------------------
+    //---------------------------------------------MOUSE UP-------------------------------------------------------
     /// <summary>
     /// Method that is activated once when the mouse right click is released and the block is selected.
     /// </summary>
@@ -477,15 +373,14 @@ public class BlockPrim : MonoBehaviour {
     {
         if (Input.GetMouseButtonUp(0))
         {
-            mouseDown = false;
+            // Reset the collider name to empty.
             colliderName = "";
-            //savedBlockLoc = this.transform.position;
-            //savedTarget = targetPos;
+            verticesSaved = block_mesh.vertices;
         }
         
     }
 
-    //---------------------------------------------------------------------------------------------------
+    //---------------------------------------------MOUSE DOWN------------------------------------------------------
     /// <summary>
     /// Method that is activated once when the mouse right click is pressed and the block is selected.
     /// </summary>
@@ -495,83 +390,38 @@ public class BlockPrim : MonoBehaviour {
         {
             savedBlockLoc = this.transform.position;
             savedMoveTarget = SetTarggetPosition();
+
+            //-------------------------------------------------------
+            // Update the colliderName when MouseDown.
+            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out hit))
+            {
+                colliderName = hit.collider.name;
+            }
+            //-------------------------------------------------------
+            // Save location for several things inside BlockFace. Like FaceCenter.
+            foreach (BlockFace face in FACE_COLL)
+            {
+                face.SaveOnMouseDown();
+            }
         } 
     }
 
-    void OnGUI()
-    {
-        GUI.color = new Color(1f, 0.5f, 0f, 1f);
-        GUI.Label(new Rect(20, 5, 100, 100), anglePrj.ToString());
-        Vector3 mouseLoc = Manager.CHANGE_IN_MOUSE_LOC;
-        GUI.Label(new Rect(20, 20, 220, 100), ("Diff mouse loc - " + "x: " + mouseLoc.x + " y: " + mouseLoc.y + " z: " + mouseLoc.z));
-        Vector3 mouseLocWorld = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 1));
-        //Vector3 mouseLocWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        GUI.Label(new Rect(20, 35, 400, 100), ("Diff_m_world - " + "x: " + mouseLocWorld.x + " y: " + mouseLocWorld.y + " z: " + mouseLocWorld.z));
 
-        Vector2 correctedMousePosition = new Vector2((float)Input.mousePosition.x, (float)Screen.height - (float)Input.mousePosition.y);
-        Vector2 correctedSavedMousePosition = new Vector2((float)Manager.savedMouseLoc.x, (float)Screen.height - (float)Manager.savedMouseLoc.y);
-
-        //Drawing.DrawLine(new Vector2(100, 100), projNorm, Color.red, 2);
-
-        if (correctedSavedMousePosition.x != 0 && correctedSavedMousePosition.y - Screen.height != 0)
-        {
-            //Drawing.DrawLine(correctedSavedMousePosition, correctedMousePosition, Color.red, 2);
-        }
-
-
-
-        GUI.color = Color.red;
-        DrawLabel(vertices[0], "V_0");
-        DrawLabel(vertices[1], "V_1");
-        DrawLabel(vertices[2], "V_2");
-        DrawLabel(vertices[3], "V_3");
-        
-        /*
-        GUI.color = Color.green;
-        DrawLabel(vertices[4], "V_4");
-        DrawLabel(vertices[5], "V_5");
-        DrawLabel(vertices[6], "V_6");
-        DrawLabel(vertices[7], "V_7");
-        
-        GUI.color = Color.green;
-        DrawLabel(vertices[8], "V_8");
-        DrawLabel(vertices[9], "V_9");
-        DrawLabel(vertices[10], "V_10");
-        DrawLabel(vertices[11], "V_11");
-        
-        GUI.color = Color.green;
-        DrawLabel(vertices[12], "V_12");
-        DrawLabel(vertices[13], "V_13");
-        DrawLabel(vertices[14], "V_14");
-        DrawLabel(vertices[15], "V_15");
-        
-        GUI.color = Color.green;
-        DrawLabel(vertices[16], "V_16");
-        DrawLabel(vertices[17], "V_17");
-        DrawLabel(vertices[18], "V_18");
-        DrawLabel(vertices[19], "V_19");
-        
-        GUI.color = Color.green;
-        DrawLabel(vertices[20], "V_20");
-        DrawLabel(vertices[21], "V_21");
-        DrawLabel(vertices[22], "V_22");
-        DrawLabel(vertices[23], "V_23");
-        */
-
-    }
 
     //---------------------------------------------------------------------------------------------------
     /// <summary>
     /// Method that returns the intersection point between object's middle plane and a ray from mouse position.
     /// </summary>
     /// <returns></returns>
-    Vector3 SetTarggetPosition()
+    private Vector3 SetTarggetPosition()
     {
         Ray rayPlane = Camera.main.ScreenPointToRay(Input.mousePosition);
         float point = 0f;
 
         if (movePlane.Raycast(rayPlane, out point))
         {
+            // Return the point in world space that intersects with this plane.
             return rayPlane.GetPoint(point);
         }
         else
@@ -593,66 +443,10 @@ public class BlockPrim : MonoBehaviour {
         }
     }
 
-    void MoveFace(float moveDist)
-    {
-        Vector3 moveDir = block_mesh.normals[0].normalized * moveDist / 100;
-        vertices[0] = verticesSaved[0] + moveDir;
-        vertices[1] = verticesSaved[1] + moveDir;
-        vertices[2] = verticesSaved[2] + moveDir;
-        vertices[3] = verticesSaved[3] + moveDir;
-
-        vertices[8] = verticesSaved[8] + moveDir;
-        vertices[9] = verticesSaved[9] + moveDir;
-
-        vertices[13] = verticesSaved[13] + moveDir;
-        vertices[14] = verticesSaved[14] + moveDir;
-
-        vertices[16] = verticesSaved[16] + moveDir;
-        vertices[17] = verticesSaved[17] + moveDir;
-
-        vertices[22] = verticesSaved[22] + moveDir;
-        vertices[23] = verticesSaved[23] + moveDir;
-        block_mesh.vertices = vertices;
-        GameObject colliderFace = this.transform.Find("Face_0").gameObject;
-        colliderFace.transform.position = transform.TransformPoint((vertices[0] + vertices[1] + vertices[2] + vertices[3]) / 4);
-    }
-
-    void MoveFace(Vector3 vec)
-    {
-        Vector3 moveDir = block_mesh.normals[0].normalized * vec.magnitude / 100;
-        vertices[0] = verticesSaved[0] + moveDir;
-        vertices[1] = verticesSaved[1] + moveDir;
-        vertices[2] = verticesSaved[2] + moveDir;
-        vertices[3] = verticesSaved[3] + moveDir;
-
-        vertices[8] = verticesSaved[8] + moveDir;
-        vertices[9] = verticesSaved[9] + moveDir;
-
-        vertices[13] = verticesSaved[13] + moveDir;
-        vertices[14] = verticesSaved[14] + moveDir;
-
-        vertices[16] = verticesSaved[16] + moveDir;
-        vertices[17] = verticesSaved[17] + moveDir;
-
-        vertices[22] = verticesSaved[22] + moveDir;
-        vertices[23] = verticesSaved[23] + moveDir;
-        block_mesh.vertices = vertices;
-        GameObject colliderFace = this.transform.Find("Face_0").gameObject;
-        colliderFace.transform.position = transform.TransformPoint((vertices[0] + vertices[1] + vertices[2] + vertices[3]) / 4);
-    }
-
+    //---------------------------------------------------------------------------------------------------
     /// <summary>
-    /// Draw a label text in specified location in 3D, used for Debuging.
+    /// Method that runs when the block is selected. It updates the faces vertices and their normals.
     /// </summary>
-    /// <param name="loc"> 3D location of the label text. </param>
-    /// <param name="text"> String with text to display. </param>
-    void DrawLabel(Vector3 loc, string text)
-    {
-        Vector2 guiPosition = Camera.main.WorldToScreenPoint(transform.TransformPoint(loc));
-        guiPosition.y = Screen.height - guiPosition.y;
-        GUI.Label(new Rect(guiPosition, new Vector2(30, 20)), text);
-    }
-
     private void UpdateFaceVerts()
     {
         // Assign Vertices to each face
@@ -713,6 +507,67 @@ public class BlockPrim : MonoBehaviour {
         FACE_POS_Y.vertexIndexCon = new int[] { 0, 3, 4, 7 };
         FACE_NEG_Y.vertexIndexCon = new int[] { 1, 2, 5, 6 };
 
+
+    }
+
+    void OnGUI()
+    {
+        GUI.color = new Color(1f, 0.5f, 0f, 1f);
+        Vector3 mouseLoc = Manager.CHANGE_IN_MOUSE_LOC;
+        GUI.Label(new Rect(20, 20, 220, 100), ("Diff mouse loc - " + "x: " + mouseLoc.x + " y: " + mouseLoc.y + " z: " + mouseLoc.z));
+        Vector3 mouseLocWorld = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 1));
+        //Vector3 mouseLocWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        GUI.Label(new Rect(20, 35, 400, 100), ("Diff_m_world - " + "x: " + mouseLocWorld.x + " y: " + mouseLocWorld.y + " z: " + mouseLocWorld.z));
+
+        Vector2 correctedMousePosition = new Vector2((float)Input.mousePosition.x, (float)Screen.height - (float)Input.mousePosition.y);
+        Vector2 correctedSavedMousePosition = new Vector2((float)Manager.savedMouseLoc.x, (float)Screen.height - (float)Manager.savedMouseLoc.y);
+
+        //Drawing.DrawLine(new Vector2(100, 100), projNorm, Color.red, 2);
+
+        if (correctedSavedMousePosition.x != 0 && correctedSavedMousePosition.y - Screen.height != 0)
+        {
+            //Drawing.DrawLine(correctedSavedMousePosition, correctedMousePosition, Color.red, 2);
+        }
+
+
+
+        GUI.color = Color.red;
+        Drawing.DrawLabel(vertices[0], "V_0", this.gameObject);
+        Drawing.DrawLabel(vertices[1], "V_1", this.gameObject);
+        Drawing.DrawLabel(vertices[2], "V_2", this.gameObject);
+        Drawing.DrawLabel(vertices[3], "V_3", this.gameObject);
+
+        /*
+        GUI.color = Color.green;
+        DrawLabel(vertices[4], "V_4");
+        DrawLabel(vertices[5], "V_5");
+        DrawLabel(vertices[6], "V_6");
+        DrawLabel(vertices[7], "V_7");
+        
+        GUI.color = Color.green;
+        DrawLabel(vertices[8], "V_8");
+        DrawLabel(vertices[9], "V_9");
+        DrawLabel(vertices[10], "V_10");
+        DrawLabel(vertices[11], "V_11");
+        
+        GUI.color = Color.green;
+        DrawLabel(vertices[12], "V_12");
+        DrawLabel(vertices[13], "V_13");
+        DrawLabel(vertices[14], "V_14");
+        DrawLabel(vertices[15], "V_15");
+        
+        GUI.color = Color.green;
+        DrawLabel(vertices[16], "V_16");
+        DrawLabel(vertices[17], "V_17");
+        DrawLabel(vertices[18], "V_18");
+        DrawLabel(vertices[19], "V_19");
+        
+        GUI.color = Color.green;
+        DrawLabel(vertices[20], "V_20");
+        DrawLabel(vertices[21], "V_21");
+        DrawLabel(vertices[22], "V_22");
+        DrawLabel(vertices[23], "V_23");
+        */
 
     }
 

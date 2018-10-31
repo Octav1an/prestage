@@ -86,5 +86,18 @@ public class Drawing
         GUI.Label(new Rect(guiPosition, new Vector2(boxWidth, 20)), text);
     }
 
+    /// <summary>
+    /// Draw Label, and convert the local coordinates to world coordinates.
+    /// </summary>
+    /// <param name="loc">Position vector.</param>
+    /// <param name="text">String to display.</param>
+    /// <param name="obj">Reference object to converto to world coordinates.</param>
+    public static void DrawLabel(Vector3 loc, string text, GameObject obj)
+    {
+        Vector2 guiPosition = Camera.main.WorldToScreenPoint(obj.transform.TransformPoint(loc));
+        guiPosition.y = Screen.height - guiPosition.y;
+        GUI.Label(new Rect(guiPosition, new Vector2(30, 20)), text);
+    }
+
 }
 

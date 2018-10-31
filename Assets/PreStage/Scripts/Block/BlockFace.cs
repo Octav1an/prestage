@@ -32,17 +32,65 @@ public class BlockFace : MonoBehaviour {
         }
     }
     /// <summary>
+    /// Face center location for world space.
+    /// </summary>
+    public Vector3 FACE_CENTER_WORLD
+    {
+        get
+        {
+            return BLOCK_COMP.transform.TransformPoint(FACE_CENTER);
+        }
+    }
+    private Vector3 savedFaceCenter;
+    /// <summary>
+    /// Saved center location when the face was clicked. Used for moving face verts.
+    /// </summary>
+    private Vector3 SAVED_FACE_CENTER_WORLD
+    {
+        get
+        {
+            return BLOCK_COMP.transform.TransformPoint(savedFaceCenter);
+        }
+    }
+    /// <summary>
     /// These are the 4 container indexes that hold face's vertices and the adjacent face's verts that
     /// share the same location.
     /// </summary>
     public int[] vertexIndexCon;
     public Vector3 faceNormal;
+    /// <summary>
+    /// Get the face normal direction in world space.
+    /// </summary>
+    public Vector3 FACE_NORMAL_WORLD
+    {
+        get
+        {
+            return BLOCK_COMP.gameObject.transform.TransformDirection(faceNormal);
+        }
+    }
+    /// <summary>
+    /// Return vector that is the projection of the target vector, for move porpuses.
+    /// </summary>
+    private Vector3 PROJECTED_TARGET
+    {
+        get
+        {
+            Vector3 prj = Vector3.Project(BLOCK_COMP.TARGET_WORLD, FACE_NORMAL_WORLD);
+            return BLOCK_COMP.transform.position + prj;
+        }
+    }
+    /// <summary>
+    /// Save the PROJECTED_TARGET in order to create the offset necessary when starting to move the face.
+    /// Getting the difference between PROJECTED_TARGET and savedProjectedTarget with cancel the jumping effect.
+    /// </summary>
+    private Vector3 savedProjectedTarget;
+
 
 	// Use this for initialization
 	void Start () {
-        //print(BLOCK_COMP.VERTS_COLL.Length);
-        //if(BLOCK_COMP.)
-        if(this.name == "face_neg_y")
+        savedFaceCenter = FACE_CENTER;
+        savedProjectedTarget = PROJECTED_TARGET;
+        if (this.name == "face_neg_y")
         {
             foreach(int vert in vertexIndexCon)
             {
@@ -50,16 +98,33 @@ public class BlockFace : MonoBehaviour {
             }
             //print("Center: " + FACE_CENTER);
         }
+        
 	}
-	
-	// Update is called once per frame
-	void Update () {
+
+    // Update is called once per frame
+    void Update()
+    {
         UpdateFaceLoc(BLOCK_COMP.selected);
         if (this.name != "face_pos_y" && this.name != "face_neg_y")
         {
             MoveFace(BLOCK_COMP.colliderName);
         }
         //if (this.name == "face_neg_y") print("Center: " + FACE_CENTER);
+        //if (this.name == "face_pos_z") print(faceNormal);
+        //if (this.name == "face_pos_z")
+        //{
+
+        //}
+    }
+
+    //---------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Method that is called in BlockPrim when MouseDown event was triggered.
+    /// </summary>
+    public void SaveOnMouseDown()
+    {
+        savedFaceCenter = FACE_CENTER;
+        savedProjectedTarget = PROJECTED_TARGET;
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -86,7 +151,14 @@ public class BlockFace : MonoBehaviour {
                     int index = vertexIndex[j];
                     // Get the actual vertex from mesh.
                     // When moving a face, in addition to its 4 vertices, this will move adjacent face's verts.
-                    BLOCK_COMP.vertices[index] += moveDir * 0.05f;
+
+                    //BLOCK_COMP.vertices[index] += moveDir * 0.05f;
+
+                    // First get the vector between savedProjectedTarget and actualProjectedTarget, this is done in
+                    // order to avoid jumping the face location when the mouse is clicked.
+                    Vector3 diff = PROJECTED_TARGET - savedProjectedTarget;
+                    // Before adding the "diff" vector convert it to local sapace, otherwise it won't work when the block is rotated.
+                    BLOCK_COMP.vertices[index] = BLOCK_COMP.verticesSaved[index] + BLOCK_COMP.transform.InverseTransformVector(diff);
                 }
             }
             /// Update block vertices with freshly moved ones.
