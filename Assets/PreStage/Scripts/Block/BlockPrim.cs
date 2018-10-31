@@ -6,6 +6,12 @@ using UnityEditor;
 
 public class BlockPrim : MonoBehaviour {
 
+    /// <summary>
+    /// Block ID in the list that stores all existing blocks. This is not uniq, because
+    /// the list can be dynamicaly updated.
+    /// </summary>
+    public int blockID = -1;
+
     //Vertex Array, use only geting the vertices. This property cannot rewrite them.
     public Vector3[] VERTS_COLL
     {
@@ -259,7 +265,7 @@ public class BlockPrim : MonoBehaviour {
         new int[] {11, 4, 20}
     };
     
-    public bool selected = true;
+    public bool selected = false;
 
     Ray ray;
     RaycastHit hit;
@@ -311,6 +317,7 @@ public class BlockPrim : MonoBehaviour {
         block_mesh = GetComponent<MeshFilter>().mesh;
         vertices = block_mesh.vertices;
         verticesSaved = block_mesh.vertices;
+        if (blockID == -1) blockID = Manager.COLL_BLOCKS_OBJECTS.IndexOf(gameObject);
         savedMoveTarget = SetTarggetPosition();
         movePlane = new Plane(Vector3.up, this.transform.position);
         SetUpIndividualFaces();
@@ -324,18 +331,6 @@ public class BlockPrim : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
-        // Here run methods when the block is selected only
-        if (selected)
-        {
-            UpdateFaceVerts();
-            OnMouseUpGeneral();
-            OnMouseDownGeneral();
-            // Here run everything that should run on mouse down.
-            if (Input.GetMouseButton(0))
-            {
-                MoveBlock();
-            }
-        }
         if (Input.GetKey(KeyCode.T))
         {
             Vector3 moveDir = block_mesh.normals[0];
@@ -352,30 +347,42 @@ public class BlockPrim : MonoBehaviour {
             block_mesh.vertices = vertices;
 
         }
+    }
 
-        if (Input.GetMouseButtonDown(0))
+    private void LateUpdate()
+    {
+        // By having these function inside LateUpdate - I make sure that first the select boolean is triggered by 
+        // Manager and then run these function.
+        // Here run methods when the block is selected only.
+        if (selected)
         {
-            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out hit))
+            UpdateFaceVerts();
+            OnMouseUpLocal();
+            OnMouseDownLocal();
+            
+            // Here run everything that should run on mouse down.
+            if (Input.GetMouseButton(0))
             {
-                colliderName = hit.collider.name;
+                MoveBlock();
+                RotateBlock();
             }
         }
     }
-
 
 
     //---------------------------------------------MOUSE UP-------------------------------------------------------
     /// <summary>
     /// Method that is activated once when the mouse right click is released and the block is selected.
     /// </summary>
-    private void OnMouseUpGeneral()
+    private void OnMouseUpLocal()
     {
         if (Input.GetMouseButtonUp(0))
         {
             // Reset the collider name to empty.
             colliderName = "";
             verticesSaved = block_mesh.vertices;
+            // Reset the selection
+            selected = false;
         }
         
     }
@@ -384,10 +391,11 @@ public class BlockPrim : MonoBehaviour {
     /// <summary>
     /// Method that is activated once when the mouse right click is pressed and the block is selected.
     /// </summary>
-    private void OnMouseDownGeneral()
+    private void OnMouseDownLocal()
     {
         if (Input.GetMouseButtonDown(0))
         {
+            print("BlockID: " + blockID);
             savedBlockLoc = this.transform.position;
             savedMoveTarget = SetTarggetPosition();
 
@@ -397,6 +405,7 @@ public class BlockPrim : MonoBehaviour {
             if (Physics.Raycast(ray, out hit))
             {
                 colliderName = hit.collider.name;
+                
             }
             //-------------------------------------------------------
             // Save location for several things inside BlockFace. Like FaceCenter.
@@ -407,7 +416,21 @@ public class BlockPrim : MonoBehaviour {
         } 
     }
 
+    private void RotateBlock()
+    {
+        if (colliderName == "face_pos_y")
+        {
+            if (Input.GetKey(KeyCode.N))
+            {
+                this.transform.Rotate(Vector3.up * Time.deltaTime * 50, Space.World);
+            }
+            else if (Input.GetKey(KeyCode.M))
+            {
+                this.transform.Rotate(Vector3.up * Time.deltaTime * (-50), Space.World);
+            }
+        }
 
+    }
 
     //---------------------------------------------------------------------------------------------------
     /// <summary>
