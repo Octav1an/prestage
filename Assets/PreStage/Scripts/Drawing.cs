@@ -76,7 +76,7 @@ public class Drawing
     {
         Vector2 guiPosition = Camera.main.WorldToScreenPoint(loc);
         guiPosition.y = Screen.height - guiPosition.y;
-        GUI.Label(new Rect(guiPosition, new Vector2(30, 20)), text);
+        GUI.Label(new Rect(guiPosition, new Vector2(80, 20)), text);
     }
 
     public static void DrawLabel(Vector3 loc, string text, float boxWidth = 30)

@@ -395,7 +395,7 @@ public class BlockPrim : MonoBehaviour {
     {
         if (Input.GetMouseButtonDown(0))
         {
-            print("BlockID: " + blockID);
+            //print("BlockID: " + blockID);
             savedBlockLoc = this.transform.position;
             savedMoveTarget = SetTarggetPosition();
 
@@ -535,6 +535,9 @@ public class BlockPrim : MonoBehaviour {
 
     void OnGUI()
     {
+        GUI.color = new Color(1f, 0.1f, 0f, 1f);
+        if (selected) GUI.Label(new Rect(20, 0, 220, 100), ("Selected Block ID: " + this.blockID));
+
         GUI.color = new Color(1f, 0.5f, 0f, 1f);
         Vector3 mouseLoc = Manager.CHANGE_IN_MOUSE_LOC;
         GUI.Label(new Rect(20, 20, 220, 100), ("Diff mouse loc - " + "x: " + mouseLoc.x + " y: " + mouseLoc.y + " z: " + mouseLoc.z));
@@ -542,23 +545,26 @@ public class BlockPrim : MonoBehaviour {
         //Vector3 mouseLocWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         GUI.Label(new Rect(20, 35, 400, 100), ("Diff_m_world - " + "x: " + mouseLocWorld.x + " y: " + mouseLocWorld.y + " z: " + mouseLocWorld.z));
 
-        Vector2 correctedMousePosition = new Vector2((float)Input.mousePosition.x, (float)Screen.height - (float)Input.mousePosition.y);
-        Vector2 correctedSavedMousePosition = new Vector2((float)Manager.savedMouseLoc.x, (float)Screen.height - (float)Manager.savedMouseLoc.y);
+        GUI.color = new Color(0.2f, 0.1f, 0.9f, 1f);
+        //GUI.Label(new Rect(20, 35, 400, 100), ("BlockID: " + blockID));
+        Drawing.DrawLabel(FACE_POS_Y.FACE_CENTER_WORLD + new Vector3(0, 0.3f , 0), "BlockID: " + blockID);
+        //Vector2 scre = Camera.main.WorldToScreenPoint(FACE_POS_Y.FACE_CENTER_WORLD);
+        //Vector2 scre2 = Camera.main.WorldToScreenPoint(FACE_POS_Y.FACE_CENTER_WORLD + new Vector3(0, 0.3f, 0));
+        //Drawing.DrawLine(new Vector2(scre.x, Screen.height - scre.y), new Vector2(scre2.x, Screen.height - scre2.y), Color.red, 2);
 
-        //Drawing.DrawLine(new Vector2(100, 100), projNorm, Color.red, 2);
-
-        if (correctedSavedMousePosition.x != 0 && correctedSavedMousePosition.y - Screen.height != 0)
-        {
-            //Drawing.DrawLine(correctedSavedMousePosition, correctedMousePosition, Color.red, 2);
-        }
 
 
 
         GUI.color = Color.red;
-        Drawing.DrawLabel(vertices[0], "V_0", this.gameObject);
-        Drawing.DrawLabel(vertices[1], "V_1", this.gameObject);
-        Drawing.DrawLabel(vertices[2], "V_2", this.gameObject);
-        Drawing.DrawLabel(vertices[3], "V_3", this.gameObject);
+        //Drawing.DrawLabel(vertices[0], "V_0", this.gameObject);
+        //Drawing.DrawLabel(vertices[1], "V_1", this.gameObject);
+        //Drawing.DrawLabel(vertices[2], "V_2", this.gameObject);
+        //Drawing.DrawLabel(vertices[3], "V_3", this.gameObject);
+
+        //Drawing.DrawLabel(vertices[8], "V_4", this.gameObject);
+        //Drawing.DrawLabel(vertices[9], "V_5", this.gameObject);
+        //Drawing.DrawLabel(vertices[10], "V_6", this.gameObject);
+        //Drawing.DrawLabel(vertices[11], "V_7", this.gameObject);
 
         /*
         GUI.color = Color.green;

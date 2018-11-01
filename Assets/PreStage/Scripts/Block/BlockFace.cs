@@ -191,7 +191,7 @@ public class BlockFace : MonoBehaviour {
     void OnGUI()
     {
         GUI.color = Color.blue;
-        Drawing.DrawLabel(transform.position, gameObject.name, 80);
+        //Drawing.DrawLabel(transform.position, gameObject.name, 80);
     }
 
 }

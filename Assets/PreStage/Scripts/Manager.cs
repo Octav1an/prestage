@@ -35,6 +35,7 @@ public class Manager : MonoBehaviour {
             return GameObject.FindGameObjectWithTag("Ground");
         }
     }
+    public GameObject blockPrefab;
 
     Ray ray;
     RaycastHit hit;
@@ -114,6 +115,12 @@ public class Manager : MonoBehaviour {
             }
 
         }
+    }
+
+    public void CreateBlock()
+    {
+        GameObject fresh_obj = (GameObject)Instantiate(blockPrefab, new Vector3(), Quaternion.identity);
+        COLL_BLOCKS_OBJECTS.Add(fresh_obj);
     }
 
     void SelectBlock(RaycastHit _hit)
