@@ -264,6 +264,37 @@ public class BlockPrim : MonoBehaviour {
         new int[] {10, 5, 16},
         new int[] {11, 4, 20}
     };
+    /// <summary>
+    /// Geometric center of the block in world space that does not equl to this.transform.position.
+    /// </summary>
+    public Vector3 GEOMETRIC_CENTER_WORLD
+    {
+        get
+        {
+            Vector3 center = new Vector3();
+            foreach (Vector3 vert in this.GetComponent<MeshFilter>().mesh.vertices)
+            {
+                center += vert;
+            }
+            return this.transform.TransformPoint(center / 24);
+        }
+    }
+    /// <summary>
+    /// Geometric center of the block in local space that does not equl to this.transform.position. Is used for to resize collider.
+    /// </summary>
+    public Vector3 GEOMETRIC_CENTER
+    {
+        get
+        {
+            Vector3 center = new Vector3();
+            foreach (Vector3 vert in this.GetComponent<MeshFilter>().mesh.vertices)
+            {
+                center += vert;
+            }
+            return center / 24;
+        }
+    }
+    public GameObject center_obj;
     
     public bool selected = false;
 
@@ -345,8 +376,8 @@ public class BlockPrim : MonoBehaviour {
             }
             // Update block vertices with freshly moved ones.
             block_mesh.vertices = vertices;
-
         }
+        center_obj.transform.position = GEOMETRIC_CENTER_WORLD;
     }
 
     private void LateUpdate()
@@ -366,6 +397,16 @@ public class BlockPrim : MonoBehaviour {
                 MoveBlock();
                 RotateBlock();
             }
+            block_mesh.RecalculateBounds();
+            block_mesh.RecalculateNormals();
+            block_mesh.RecalculateTangents();
+
+            BoxCollider colli = this.GetComponent<BoxCollider>();
+            colli.center = GEOMETRIC_CENTER;
+            float lengthZ = (vertices[0] - vertices[11]).magnitude;
+            float lengthX = (vertices[4] - vertices[15]).magnitude;
+            //print(lengthZ);
+            colli.size = new Vector3(lengthX, 1, lengthZ);
         }
     }
 
@@ -383,6 +424,7 @@ public class BlockPrim : MonoBehaviour {
             verticesSaved = block_mesh.vertices;
             // Reset the selection
             selected = false;
+            
         }
         
     }
