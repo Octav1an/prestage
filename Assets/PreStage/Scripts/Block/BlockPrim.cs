@@ -295,7 +295,28 @@ public class BlockPrim : MonoBehaviour {
         }
     }
     public GameObject center_obj;
-    
+    /// <summary>
+    /// Dimension of the block on Z direction in local space.
+    /// </summary>
+    public float LENGTH_Z
+    {
+        get
+        {
+            return (vertices[0] - vertices[11]).magnitude;
+        }
+    }
+    /// <summary>
+    /// Dimension of the block on X direction in local space.
+    /// </summary>
+    public float LENGTH_X
+    {
+        get
+        {
+            return (vertices[4] - vertices[15]).magnitude;
+        }
+    }
+
+
     public bool selected = false;
 
     Ray ray;
@@ -400,13 +421,6 @@ public class BlockPrim : MonoBehaviour {
             block_mesh.RecalculateBounds();
             block_mesh.RecalculateNormals();
             block_mesh.RecalculateTangents();
-
-            BoxCollider colli = this.GetComponent<BoxCollider>();
-            colli.center = GEOMETRIC_CENTER;
-            float lengthZ = (vertices[0] - vertices[11]).magnitude;
-            float lengthX = (vertices[4] - vertices[15]).magnitude;
-            //print(lengthZ);
-            colli.size = new Vector3(lengthX, 1, lengthZ);
         }
     }
 
@@ -424,7 +438,7 @@ public class BlockPrim : MonoBehaviour {
             verticesSaved = block_mesh.vertices;
             // Reset the selection
             selected = false;
-            
+            UpdateBlockCollider();
         }
         
     }
@@ -458,6 +472,18 @@ public class BlockPrim : MonoBehaviour {
         } 
     }
 
+    /// <summary>
+    /// Update the block collider that is a BoxCollider. Used for calculation of closest points for snap.
+    /// </summary>
+    private void UpdateBlockCollider()
+    {
+        BoxCollider blockCollider = this.GetComponent<BoxCollider>();
+        // Update collider center to be the geometric center of the block, which is not equal to the transform.position.
+        blockCollider.center = GEOMETRIC_CENTER;
+        blockCollider.size = new Vector3(LENGTH_X, 1, LENGTH_Z);
+    }
+
+    //---------------------------------------------------------------------------------------------------
     private void RotateBlock()
     {
         if (colliderName == "face_pos_y")
@@ -495,7 +521,7 @@ public class BlockPrim : MonoBehaviour {
         }
     }
 
-    //---------------------------------------------------------------------------------------------------
+    //-----------------------------------------------MOVE BLOCK----------------------------------------------------
     /// <summary>
     /// Move the entire block, when click and drag on the top face.
     /// </summary>
