@@ -146,7 +146,7 @@ public class BlockPrim : MonoBehaviour {
     {
         get
         {
-            if(FACE_POS_Z_OBJ == null)
+            if (FACE_POS_Z_OBJ == null)
             {
                 throw (new CannotSetUpFaceException("Face Setup failed - FACE_POS_Z"));
             }
@@ -154,7 +154,7 @@ public class BlockPrim : MonoBehaviour {
             {
                 return FACE_POS_Z_OBJ.GetComponent<BlockFace>();
             }
-            
+
         }
     }
     public BlockFace FACE_NEG_Z
@@ -249,6 +249,48 @@ public class BlockPrim : MonoBehaviour {
         }
     }
 
+    // Mid-points on vertical edges.
+    public Vector3 EDGE_MID_PT0_WORLD
+    {
+        get
+        {
+            return this.transform.TransformPoint((vertices[0] + vertices[1]) / 2);
+        }
+    }
+    public Vector3 EDGE_MID_PT1_WORLD
+    {
+        get
+        {
+            return this.transform.TransformPoint((vertices[3] + vertices[2]) / 2);
+        }
+    }
+    public Vector3 EDGE_MID_PT2_WORLD
+    {
+        get
+        {
+            return this.transform.TransformPoint((vertices[8] + vertices[9]) / 2);
+        }
+    }
+    public Vector3 EDGE_MID_PT3_WORLD
+    {
+        get
+        {
+            return this.transform.TransformPoint((vertices[11] + vertices[10]) / 2);
+        }
+    }
+    public Vector3[] EDGE_MID_COLL
+    {
+        get
+        {
+            Vector3[] coll = new Vector3[4];
+            coll[0] = EDGE_MID_PT0_WORLD;
+            coll[1] = EDGE_MID_PT1_WORLD;
+            coll[2] = EDGE_MID_PT2_WORLD;
+            coll[3] = EDGE_MID_PT3_WORLD;
+            return coll;
+        }
+    }
+
     /// <summary>
     /// This represend collection of indexes for vertices that share the same coordinate. Think about them as Block's 8 vertices.
     /// Check Rhino file to see to which container each vertex belongs.
@@ -295,6 +337,7 @@ public class BlockPrim : MonoBehaviour {
         }
     }
     public GameObject center_obj;
+    public GameObject prj_obj;
     /// <summary>
     /// Dimension of the block on Z direction in local space.
     /// </summary>
@@ -315,7 +358,6 @@ public class BlockPrim : MonoBehaviour {
             return (vertices[4] - vertices[15]).magnitude;
         }
     }
-
 
     public bool selected = false;
 
@@ -373,6 +415,8 @@ public class BlockPrim : MonoBehaviour {
         savedMoveTarget = SetTarggetPosition();
         movePlane = new Plane(Vector3.up, this.transform.position);
         SetUpIndividualFaces();
+        UpdateBlockCollider();
+        UpdateProximityCollider();
         //--------------------------------------------
         foreach (Vector3 vertex in vertices)
         {
@@ -398,7 +442,11 @@ public class BlockPrim : MonoBehaviour {
             // Update block vertices with freshly moved ones.
             block_mesh.vertices = vertices;
         }
-        center_obj.transform.position = GEOMETRIC_CENTER_WORLD;
+        if (Input.GetKey(KeyCode.O))
+        {
+            this.transform.Translate(new Vector3(0.1f, 0, 0), Space.World);
+        }
+        //if(center_obj) center_obj.transform.position = GEOMETRIC_CENTER_WORLD;
     }
 
     private void LateUpdate()
@@ -417,13 +465,128 @@ public class BlockPrim : MonoBehaviour {
             {
                 MoveBlock();
                 RotateBlock();
+                //List<GameObject> list = (List<GameObject>)Snap2()[0];
+                //print("Proximity objects: " + list.Count);
+                //print("Closest Move Vector: " + Snap2()[1]);
+                //print("Closest Vector: " + Snap2()[2]);
+                //print("Closest Index: " + Snap2()[3]);
+                print("Closest Dist: " + Snap2()[4]);
             }
-            block_mesh.RecalculateBounds();
-            block_mesh.RecalculateNormals();
-            block_mesh.RecalculateTangents();
         }
     }
 
+    public Vector3 Snap()
+    {
+        // 1.Get the collider from the positive proximity distance
+        List<GameObject> closeBlocksColl = transform.GetComponentInChildren<ProximityCollider>().closeBlocksColl;
+        //print(closeBlocksColl.Count);
+        // 2.Find the closest loc for each edge mid pt on each collider.
+        Vector3 closestVec = new Vector3();
+        float closestDist = 1000;
+        int closestIndex = -1;
+        Vector3[] coll_closest = new Vector3[8];
+        if (closeBlocksColl.Count > 0)
+        {
+            // Check the closest vector from this to the proximity objects.
+            for (int i = 0; i < EDGE_MID_COLL.Length; i++)
+            {
+                coll_closest[i] = closeBlocksColl[0].GetComponent<BoxCollider>().ClosestPoint(EDGE_MID_COLL[i]);
+                if((coll_closest[i] - EDGE_MID_COLL[i]).magnitude < closestDist)
+                {
+                    closestDist = (coll_closest[i] - EDGE_MID_COLL[i]).magnitude;
+                    closestVec = EDGE_MID_COLL[i];
+                    closestIndex = i;
+                }
+                //print("Edge PT " + i + " : " + (coll_closest[i] - EDGE_MID_COLL[i]).magnitude);
+            }
+            // Check the closest vector from proximity object to the this.
+            for(int i = 0; i < closeBlocksColl[0].GetComponent<BlockPrim>().EDGE_MID_COLL.Length; i++)
+            {
+                //coll_closest[i] = closeBlocksColl[0].GetComponent<BoxCollider>().ClosestPoint(EDGE_MID_COLL[i]);
+            }
+
+            //MoveBlockToSnap(coll_closest[closestIndex] - closestVec);
+            print("Closest Dist: " + closestDist);
+            print("Closest Vector: " + closestVec);
+            print("Index: " + closestIndex);
+            
+        }
+
+        // 3.Select the closest point from all 8
+        // 4.If distance between edge pt and projected edge pt is smaller than, snap
+        BoxCollider blockCollider = this.GetComponent<BoxCollider>();
+        Vector3 closestPoint = blockCollider.ClosestPoint(EDGE_MID_PT0_WORLD);
+        //center_obj.transform.position = closestPoint;
+
+        if (closeBlocksColl.Count > 0 && closestDist < 0.5)
+        {
+            return coll_closest[closestIndex] - closestVec;
+        }
+        else
+        {
+            return new Vector3();
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// 0. Proximity objects list
+    /// 1. Move Vector, used to move the object
+    /// 2. Closest projected vector
+    /// 3. Closest projected vector index, i need it to get vector from this object
+    /// 4. Closest distance (float)
+    /// 5. Array with projections on the proximity objects.
+    /// </summary>
+    /// <returns></returns>
+    public List<object> Snap2()
+    {
+        List<object> returnObj = new List<object>();
+        // 1.Get the collider from the positive proximity distance
+        List<GameObject> closeBlocksColl = transform.GetComponentInChildren<ProximityCollider>().closeBlocksColl;
+        returnObj.Add(closeBlocksColl);
+        //print(closeBlocksColl.Count);
+        // 2.Find the closest loc for each edge mid pt on each collider.
+        Vector3 closestVec = new Vector3();
+        float closestDist = 1000;
+        int closestIndex = -1;
+        Vector3[] coll_closest = new Vector3[4];
+        if (closeBlocksColl.Count > 0)
+        {
+            // Check the closest vector from this to the proximity objects.
+            for (int i = 0; i < EDGE_MID_COLL.Length; i++)
+            {
+                coll_closest[i] = closeBlocksColl[0].GetComponent<BoxCollider>().ClosestPoint(EDGE_MID_COLL[i]);
+                if ((coll_closest[i] - EDGE_MID_COLL[i]).magnitude < closestDist)
+                {
+                    closestDist = (coll_closest[i] - EDGE_MID_COLL[i]).magnitude;
+                    closestVec = EDGE_MID_COLL[i];
+                    closestIndex = i;
+                }
+                //print("Edge PT " + i + " : " + (coll_closest[i] - EDGE_MID_COLL[i]).magnitude);
+            }
+
+            //MoveBlockToSnap(coll_closest[closestIndex] - closestVec);
+            //print("Closest Dist: " + closestDist);
+            //print("Closest Vector: " + closestVec);
+            //print("Index: " + closestIndex);
+
+            Vector3 moveVector =  coll_closest[closestIndex] - closestVec;
+
+            returnObj.Add(moveVector);
+            returnObj.Add(closestVec);
+            returnObj.Add(closestIndex);
+            returnObj.Add(closestDist);
+            returnObj.Add(coll_closest);
+        }
+
+        // 3.Select the closest point from all 8
+        // 4.If distance between edge pt and projected edge pt is smaller than, snap
+        BoxCollider blockCollider = this.GetComponent<BoxCollider>();
+        Vector3 closestPoint = blockCollider.ClosestPoint(EDGE_MID_PT0_WORLD);
+        //center_obj.transform.position = closestPoint;
+
+        return returnObj;
+    }
 
     //---------------------------------------------MOUSE UP-------------------------------------------------------
     /// <summary>
@@ -439,6 +602,12 @@ public class BlockPrim : MonoBehaviour {
             // Reset the selection
             selected = false;
             UpdateBlockCollider();
+            UpdateProximityCollider();
+
+            // Recomanded by Unity to recalculate this things after mesh is changed.
+            block_mesh.RecalculateBounds();
+            block_mesh.RecalculateNormals();
+            block_mesh.RecalculateTangents();
         }
         
     }
@@ -470,6 +639,21 @@ public class BlockPrim : MonoBehaviour {
                 face.SaveOnMouseDown();
             }
         } 
+    }
+
+    /// <summary>
+    /// Update the proximity collider, that triggers snap functions.
+    /// </summary>
+    public void UpdateProximityCollider()
+    {
+        BoxCollider proximityCollider = this.transform.Find("ProximityCollider").GetComponent<BoxCollider>();
+        // Create the offset vector that will move the collider up a bit from face_neg_y center.
+        Vector3 offsetUp = new Vector3(0, 0.05f, 0);
+        // Move the proximity collider lower, this way it will not interfere with other face colliders.
+        proximityCollider.center = FACE_NEG_Y.FACE_CENTER + offsetUp;
+        // Create hte offset vector that will be added to the xz size of the proximity collider.
+        Vector3 offsetSize = new Vector3(0.6f, 0, 0.6f);
+        proximityCollider.size = new Vector3(LENGTH_X, 0.05f, LENGTH_Z) + offsetSize;
     }
 
     /// <summary>
@@ -531,7 +715,39 @@ public class BlockPrim : MonoBehaviour {
         {
             //if(Input.GetMouseButton(0)) SetTarggetPosition();
             transform.position = savedBlockLoc + (SetTarggetPosition() - savedMoveTarget);
+            MoveBlockToSnap(0.5f);
         }
+    }
+
+    private void MoveBlockToSnap(float snapDist)
+    {
+        List<GameObject> list = (List<GameObject>)Snap2()[0];
+        // First check if this object's edges to proximity obj is closest.
+        if ((float)Snap2()[4] < snapDist)
+        {
+            this.transform.Translate((Vector3)Snap2()[1], Space.World);
+            print("first");
+            if (center_obj) center_obj.transform.position = (Vector3)Snap2()[2];
+            if (prj_obj)
+            {
+                Vector3[] coll = (Vector3[])Snap2()[5];
+                prj_obj.transform.position = coll[(int)Snap2()[3]];
+            }
+        }
+        // Check if this proximity obj's edges are closest to this.
+        else if ((float)list[0].GetComponent<BlockPrim>().Snap2()[4] < snapDist)
+        {
+            this.transform.Translate(-(Vector3)list[0].GetComponent<BlockPrim>().Snap2()[1], Space.World);
+            print("second");
+            if (center_obj) center_obj.transform.position = (Vector3)list[0].GetComponent<BlockPrim>().Snap2()[2];
+            if (prj_obj)
+            {
+                Vector3[] coll = (Vector3[])list[0].GetComponent<BlockPrim>().Snap2()[5];
+                int index = (int)list[0].GetComponent<BlockPrim>().Snap2()[3];
+                prj_obj.transform.position = coll[index];
+            }
+        }
+
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -624,6 +840,11 @@ public class BlockPrim : MonoBehaviour {
 
 
         GUI.color = Color.red;
+        Drawing.DrawLabel(EDGE_MID_PT0_WORLD, "E_0");
+        Drawing.DrawLabel(EDGE_MID_PT1_WORLD, "E_1");
+        Drawing.DrawLabel(EDGE_MID_PT2_WORLD, "E_2");
+        Drawing.DrawLabel(EDGE_MID_PT3_WORLD, "E_3");
+
         //Drawing.DrawLabel(vertices[0], "V_0", this.gameObject);
         //Drawing.DrawLabel(vertices[1], "V_1", this.gameObject);
         //Drawing.DrawLabel(vertices[2], "V_2", this.gameObject);

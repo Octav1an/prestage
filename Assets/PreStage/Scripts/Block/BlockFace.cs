@@ -171,6 +171,7 @@ public class BlockFace : MonoBehaviour {
             }
             /// Update block vertices with freshly moved ones.
             BLOCK_COMP.block_mesh.vertices = BLOCK_COMP.vertices;
+            BLOCK_COMP.UpdateProximityCollider();
         }
     }
 

@@ -8,6 +8,7 @@ TagManager:
   - BlockPrim
   - Manager
   - Ground
+  - ProximityCollider
   layers:
   - Default
   - TransparentFX
