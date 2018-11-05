@@ -470,7 +470,7 @@ public class BlockPrim : MonoBehaviour {
                 //print("Closest Move Vector: " + Snap2()[1]);
                 //print("Closest Vector: " + Snap2()[2]);
                 //print("Closest Index: " + Snap2()[3]);
-                print("Closest Dist: " + Snap2()[4]);
+                //print("Closest Dist: " + Snap2()[4]);
             }
         }
     }
@@ -715,15 +715,41 @@ public class BlockPrim : MonoBehaviour {
         {
             //if(Input.GetMouseButton(0)) SetTarggetPosition();
             transform.position = savedBlockLoc + (SetTarggetPosition() - savedMoveTarget);
-            MoveBlockToSnap(0.5f);
+            MoveBlockToSnap(0.3f, 0.2f);
         }
     }
 
-    private void MoveBlockToSnap(float snapDist)
+    private void MoveBlockToSnap(float snapDist, float cornerSnap)
     {
         List<GameObject> list = (List<GameObject>)Snap2()[0];
-        // First check if this object's edges to proximity obj is closest.
-        if ((float)Snap2()[4] < snapDist)
+        //--------------------------------------------------------------------------
+        float cornerSnapDist = 1000;
+        Vector3 closestEdge = new Vector3();
+        Vector3 closestEdgeProxi = new Vector3();
+        for (int i = 0; i < list[0].GetComponent<BlockPrim>().EDGE_MID_COLL.Length; i++)
+        {
+            Vector3 edgeMidProxi = list[0].GetComponent<BlockPrim>().EDGE_MID_COLL[i];
+            for (int j = 0; j < EDGE_MID_COLL.Length; j++)
+            {
+                Vector3 edgeMidThis = EDGE_MID_COLL[j];
+                if((edgeMidThis - edgeMidProxi).magnitude < cornerSnapDist)
+                {
+                    cornerSnapDist = (edgeMidThis - edgeMidProxi).magnitude;
+                    closestEdge = edgeMidThis;
+                    closestEdgeProxi = list[0].GetComponent<BlockPrim>().EDGE_MID_COLL[i];
+                }
+            }
+        }
+        //--------------------------------------------------------------------------
+        // Corner snap has the most priority.
+        if (cornerSnapDist < cornerSnap)
+        {
+            print("zero");
+            Vector3 move = closestEdgeProxi - closestEdge;
+            this.transform.Translate(move, Space.World);
+        }
+        // Apply face snap from this as priority.
+        else if ((float)Snap2()[4] < snapDist)
         {
             this.transform.Translate((Vector3)Snap2()[1], Space.World);
             print("first");
@@ -734,7 +760,7 @@ public class BlockPrim : MonoBehaviour {
                 prj_obj.transform.position = coll[(int)Snap2()[3]];
             }
         }
-        // Check if this proximity obj's edges are closest to this.
+        // Apply face snap from other proxi objects as priority.
         else if ((float)list[0].GetComponent<BlockPrim>().Snap2()[4] < snapDist)
         {
             this.transform.Translate(-(Vector3)list[0].GetComponent<BlockPrim>().Snap2()[1], Space.World);
