@@ -4,8 +4,14 @@ using UnityEngine;
 
 public class BlockFace : MonoBehaviour {
 
-    
-    private BlockPrim BLOCK_COMP
+    public int blockID
+    {
+        get
+        {
+            return BLOCK_COMP.blockID;
+        }
+    }
+    public BlockPrim BLOCK_COMP
     {
         get
         {
@@ -105,16 +111,18 @@ public class BlockFace : MonoBehaviour {
     void Update()
     {
         UpdateFaceLoc(BLOCK_COMP.selected);
-        if (this.name != "face_pos_y" && this.name != "face_neg_y")
-        {
-            MoveFace(BLOCK_COMP.colliderName);
-        }
-        //if (this.name == "face_neg_y") print("Center: " + FACE_CENTER);
-        //if (this.name == "face_pos_z") print(faceNormal);
-        //if (this.name == "face_pos_z")
-        //{
+    }
 
-        //}
+    private void LateUpdate()
+    {
+        // Runs after void Update.
+        if (BLOCK_COMP.selected)
+        {
+            if (this.name != "face_pos_y" && this.name != "face_neg_y")
+            {
+                MoveFace(BLOCK_COMP.colliderName);
+            }
+        }
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -163,6 +171,7 @@ public class BlockFace : MonoBehaviour {
             }
             /// Update block vertices with freshly moved ones.
             BLOCK_COMP.block_mesh.vertices = BLOCK_COMP.vertices;
+            BLOCK_COMP.UpdateProximityCollider();
         }
     }
 
@@ -183,7 +192,7 @@ public class BlockFace : MonoBehaviour {
     void OnGUI()
     {
         GUI.color = Color.blue;
-        Drawing.DrawLabel(transform.position, gameObject.name, 80);
+        //Drawing.DrawLabel(transform.position, gameObject.name, 80);
     }
 
 }
