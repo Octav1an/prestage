@@ -554,6 +554,13 @@ public class BlockPrim : MonoBehaviour {
             block_mesh.RecalculateBounds();
             block_mesh.RecalculateNormals();
             block_mesh.RecalculateTangents();
+
+            //-------------------------------------------------------
+            // Update info for face variables when mouse up.
+            foreach (BlockFace face in FACE_COLL)
+            {
+                face.UpdateOnMouseUp();
+            }
         }
         
     }
@@ -582,7 +589,7 @@ public class BlockPrim : MonoBehaviour {
             // Save location for several things inside BlockFace. Like FaceCenter.
             foreach (BlockFace face in FACE_COLL)
             {
-                face.SaveOnMouseDown();
+                face.UpdateOnMouseDown();
             }
         } 
     }
@@ -664,73 +671,20 @@ public class BlockPrim : MonoBehaviour {
             
             for(int i = 0; i < ((List<GameObject>)MoveSnapBuildup()[0]).Count; i++)
             {
-                MoveBlockToSnap2(0.2f, 0.2f, i, true);
+                MoveBlockToSnap(0.2f, 0.2f, i, true);
             }
 
         }
     }
 
-    private void MoveBlockToSnap(float snapDist, float cornerSnap)
-    {
-        List<GameObject> list = (List<GameObject>)MoveSnapBuildup()[0];
-        //--------------------------------------------------------------------------
-        float cornerSnapDist = 1000;
-        Vector3 closestEdge = new Vector3();
-        Vector3 closestEdgeProxi = new Vector3();
-        for (int i = 0; i < list[0].GetComponent<BlockPrim>().EDGE_MID_COLL.Length; i++)
-        {
-            Vector3 edgeMidProxi = list[0].GetComponent<BlockPrim>().EDGE_MID_COLL[i];
-            for (int j = 0; j < EDGE_MID_COLL.Length; j++)
-            {
-                Vector3 edgeMidThis = EDGE_MID_COLL[j];
-                if((edgeMidThis - edgeMidProxi).magnitude < cornerSnapDist)
-                {
-                    cornerSnapDist = (edgeMidThis - edgeMidProxi).magnitude;
-                    closestEdge = edgeMidThis;
-                    closestEdgeProxi = list[0].GetComponent<BlockPrim>().EDGE_MID_COLL[i];
-                }
-            }
-        }
-        //--------------------------------------------------------------------------
-        // Corner snap has the most priority.
-        if (cornerSnapDist < cornerSnap)
-        {
-            print("zero");
-            Vector3 move = closestEdgeProxi - closestEdge;
-            this.transform.Translate(move, Space.World);
-        }
-        // Apply face snap from this as priority.
-        else if ((float)MoveSnapBuildup()[4] < snapDist)
-        {
-            this.transform.Translate((Vector3)MoveSnapBuildup()[1], Space.World);
-            print("first");
-            if (center_obj) center_obj.transform.position = (Vector3)MoveSnapBuildup()[2];
-            if (prj_obj)
-            {
-                Vector3[] coll = (Vector3[])MoveSnapBuildup()[5];
-                prj_obj.transform.position = coll[(int)MoveSnapBuildup()[3]];
-            }
-        }
-        // Apply face snap from other proxi objects as priority.
-        else if ((float)list[0].GetComponent<BlockPrim>().MoveSnapBuildup()[4] < snapDist)
-        {
-            this.transform.Translate(-(Vector3)list[0].GetComponent<BlockPrim>().MoveSnapBuildup()[1], Space.World);
-            print("second");
-            if (center_obj) center_obj.transform.position = (Vector3)list[0].GetComponent<BlockPrim>().MoveSnapBuildup()[2];
-            if (prj_obj)
-            {
-                Vector3[] coll = (Vector3[])list[0].GetComponent<BlockPrim>().MoveSnapBuildup()[5];
-                int index = (int)list[0].GetComponent<BlockPrim>().MoveSnapBuildup()[3];
-                prj_obj.transform.position = coll[index];
-            }
-        }
-
-    }
-
-    private float MoveBlockToSnap2(float snapDist, float cornerSnap, int proxiIndex, bool activMove)
+    private float MoveBlockToSnap(float snapDist, float cornerSnap, int proxiIndex, bool activMove)
     {
         List<GameObject> list = (List<GameObject>)MoveSnapBuildup()[0];
         float closestDist = (float)MoveSnapBuildup(proxiIndex)[4];
+        if (list.Count == 0)
+        {
+            return 0f;
+        }
         //--------------------------------------------------------------------------
         // Find the closest edge of this obj and the coresponded closest edge of proxi obj that fits
         // the snapDist comparison. (This part is used in the Corner Snap only.)
@@ -801,20 +755,20 @@ public class BlockPrim : MonoBehaviour {
     private void UpdateFaceVerts()
     {
         // Assign Vertices to each face
-        FACE_POS_Z.faceVerts = FACE_VERTS_POS_Z;
-        FACE_NEG_Z.faceVerts = FACE_VERTS_NEG_Z;
-        FACE_POS_X.faceVerts = FACE_VERTS_POS_X;
-        FACE_NEG_X.faceVerts = FACE_VERTS_NEG_X;
-        FACE_POS_Y.faceVerts = FACE_VERTS_POS_Y;
-        FACE_NEG_Y.faceVerts = FACE_VERTS_NEG_Y;
+        FACE_POS_Z.FaceVerts = FACE_VERTS_POS_Z;
+        FACE_NEG_Z.FaceVerts = FACE_VERTS_NEG_Z;
+        FACE_POS_X.FaceVerts = FACE_VERTS_POS_X;
+        FACE_NEG_X.FaceVerts = FACE_VERTS_NEG_X;
+        FACE_POS_Y.FaceVerts = FACE_VERTS_POS_Y;
+        FACE_NEG_Y.FaceVerts = FACE_VERTS_NEG_Y;
 
         // Assign FaceNormals (Update)
-        FACE_POS_Z.faceNormal = block_mesh.normals[0];
-        FACE_NEG_Z.faceNormal = block_mesh.normals[8];
-        FACE_POS_X.faceNormal = block_mesh.normals[12];
-        FACE_NEG_X.faceNormal = block_mesh.normals[4];
-        FACE_POS_Y.faceNormal = block_mesh.normals[20];
-        FACE_NEG_Y.faceNormal = block_mesh.normals[16];
+        FACE_POS_Z.FaceNormal = block_mesh.normals[0];
+        FACE_NEG_Z.FaceNormal = block_mesh.normals[8];
+        FACE_POS_X.FaceNormal = block_mesh.normals[12];
+        FACE_NEG_X.FaceNormal = block_mesh.normals[4];
+        FACE_POS_Y.FaceNormal = block_mesh.normals[20];
+        FACE_NEG_Y.FaceNormal = block_mesh.normals[16];
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -835,34 +789,34 @@ public class BlockPrim : MonoBehaviour {
             Debug.Log("Problem with Face setup in BlockPrim/SetUpIndividualFaces()");
         }
         // Assign Vertices to each face (Update)
-        FACE_POS_Z.faceVerts = FACE_VERTS_POS_Z;
-        FACE_NEG_Z.faceVerts = FACE_VERTS_NEG_Z;
-        FACE_POS_X.faceVerts = FACE_VERTS_POS_X;
-        FACE_NEG_X.faceVerts = FACE_VERTS_NEG_X;
-        FACE_POS_Y.faceVerts = FACE_VERTS_POS_Y;
-        FACE_NEG_Y.faceVerts = FACE_VERTS_NEG_Y;
+        FACE_POS_Z.FaceVerts = FACE_VERTS_POS_Z;
+        FACE_NEG_Z.FaceVerts = FACE_VERTS_NEG_Z;
+        FACE_POS_X.FaceVerts = FACE_VERTS_POS_X;
+        FACE_NEG_X.FaceVerts = FACE_VERTS_NEG_X;
+        FACE_POS_Y.FaceVerts = FACE_VERTS_POS_Y;
+        FACE_NEG_Y.FaceVerts = FACE_VERTS_NEG_Y;
 
         // Assign FaceNormals (Update)
-        FACE_POS_Z.faceNormal = block_mesh.normals[0];
-        FACE_NEG_Z.faceNormal = block_mesh.normals[8];
-        FACE_POS_X.faceNormal = block_mesh.normals[12];
-        FACE_NEG_X.faceNormal = block_mesh.normals[4];
-        FACE_POS_Y.faceNormal = block_mesh.normals[20];
-        FACE_NEG_Y.faceNormal = block_mesh.normals[16];
+        FACE_POS_Z.FaceNormal = block_mesh.normals[0];
+        FACE_NEG_Z.FaceNormal = block_mesh.normals[8];
+        FACE_POS_X.FaceNormal = block_mesh.normals[12];
+        FACE_NEG_X.FaceNormal = block_mesh.normals[4];
+        FACE_POS_Y.FaceNormal = block_mesh.normals[20];
+        FACE_NEG_Y.FaceNormal = block_mesh.normals[16];
 
         // Assign vertexIndexContainer - these are the arrays indexes that hold vertices of the block. (One Time assignment)
-        FACE_POS_Z.vertexIndexCon = new int[] { 0, 1, 2, 3 };
-        FACE_NEG_Z.vertexIndexCon = new int[] { 4, 5, 6, 7 };
-        FACE_POS_X.vertexIndexCon = new int[] { 2, 3, 4, 5 };
-        FACE_NEG_X.vertexIndexCon = new int[] { 0, 1, 6, 7 };
-        FACE_POS_Y.vertexIndexCon = new int[] { 0, 3, 4, 7 };
-        FACE_NEG_Y.vertexIndexCon = new int[] { 1, 2, 5, 6 };
+        FACE_POS_Z.VertexIndexCon = new int[] { 0, 1, 2, 3 };
+        FACE_NEG_Z.VertexIndexCon = new int[] { 4, 5, 6, 7 };
+        FACE_POS_X.VertexIndexCon = new int[] { 2, 3, 4, 5 };
+        FACE_NEG_X.VertexIndexCon = new int[] { 0, 1, 6, 7 };
+        FACE_POS_Y.VertexIndexCon = new int[] { 0, 3, 4, 7 };
+        FACE_NEG_Y.VertexIndexCon = new int[] { 1, 2, 5, 6 };
 
         // Assign edge mid points to each face.
-        FACE_POS_Z.edgeMidCollIndex = new int[] { 0, 1 };
-        FACE_NEG_Z.edgeMidCollIndex = new int[] { 2, 3 };
-        FACE_POS_X.edgeMidCollIndex = new int[] { 1, 2 };
-        FACE_NEG_X.edgeMidCollIndex = new int[] { 0, 3 };
+        FACE_POS_Z.EdgeMidCollIndex = new int[] { 0, 1 };
+        FACE_NEG_Z.EdgeMidCollIndex = new int[] { 2, 3 };
+        FACE_POS_X.EdgeMidCollIndex = new int[] { 1, 2 };
+        FACE_NEG_X.EdgeMidCollIndex = new int[] { 0, 3 };
     }
 
     void OnGUI()
