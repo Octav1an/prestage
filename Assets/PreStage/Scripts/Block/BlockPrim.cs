@@ -755,20 +755,20 @@ public class BlockPrim : MonoBehaviour {
     private void UpdateFaceVerts()
     {
         // Assign Vertices to each face
-        FACE_POS_Z.faceVerts = FACE_VERTS_POS_Z;
-        FACE_NEG_Z.faceVerts = FACE_VERTS_NEG_Z;
-        FACE_POS_X.faceVerts = FACE_VERTS_POS_X;
-        FACE_NEG_X.faceVerts = FACE_VERTS_NEG_X;
-        FACE_POS_Y.faceVerts = FACE_VERTS_POS_Y;
-        FACE_NEG_Y.faceVerts = FACE_VERTS_NEG_Y;
+        FACE_POS_Z.FaceVerts = FACE_VERTS_POS_Z;
+        FACE_NEG_Z.FaceVerts = FACE_VERTS_NEG_Z;
+        FACE_POS_X.FaceVerts = FACE_VERTS_POS_X;
+        FACE_NEG_X.FaceVerts = FACE_VERTS_NEG_X;
+        FACE_POS_Y.FaceVerts = FACE_VERTS_POS_Y;
+        FACE_NEG_Y.FaceVerts = FACE_VERTS_NEG_Y;
 
         // Assign FaceNormals (Update)
-        FACE_POS_Z.faceNormal = block_mesh.normals[0];
-        FACE_NEG_Z.faceNormal = block_mesh.normals[8];
-        FACE_POS_X.faceNormal = block_mesh.normals[12];
-        FACE_NEG_X.faceNormal = block_mesh.normals[4];
-        FACE_POS_Y.faceNormal = block_mesh.normals[20];
-        FACE_NEG_Y.faceNormal = block_mesh.normals[16];
+        FACE_POS_Z.FaceNormal = block_mesh.normals[0];
+        FACE_NEG_Z.FaceNormal = block_mesh.normals[8];
+        FACE_POS_X.FaceNormal = block_mesh.normals[12];
+        FACE_NEG_X.FaceNormal = block_mesh.normals[4];
+        FACE_POS_Y.FaceNormal = block_mesh.normals[20];
+        FACE_NEG_Y.FaceNormal = block_mesh.normals[16];
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -789,34 +789,34 @@ public class BlockPrim : MonoBehaviour {
             Debug.Log("Problem with Face setup in BlockPrim/SetUpIndividualFaces()");
         }
         // Assign Vertices to each face (Update)
-        FACE_POS_Z.faceVerts = FACE_VERTS_POS_Z;
-        FACE_NEG_Z.faceVerts = FACE_VERTS_NEG_Z;
-        FACE_POS_X.faceVerts = FACE_VERTS_POS_X;
-        FACE_NEG_X.faceVerts = FACE_VERTS_NEG_X;
-        FACE_POS_Y.faceVerts = FACE_VERTS_POS_Y;
-        FACE_NEG_Y.faceVerts = FACE_VERTS_NEG_Y;
+        FACE_POS_Z.FaceVerts = FACE_VERTS_POS_Z;
+        FACE_NEG_Z.FaceVerts = FACE_VERTS_NEG_Z;
+        FACE_POS_X.FaceVerts = FACE_VERTS_POS_X;
+        FACE_NEG_X.FaceVerts = FACE_VERTS_NEG_X;
+        FACE_POS_Y.FaceVerts = FACE_VERTS_POS_Y;
+        FACE_NEG_Y.FaceVerts = FACE_VERTS_NEG_Y;
 
         // Assign FaceNormals (Update)
-        FACE_POS_Z.faceNormal = block_mesh.normals[0];
-        FACE_NEG_Z.faceNormal = block_mesh.normals[8];
-        FACE_POS_X.faceNormal = block_mesh.normals[12];
-        FACE_NEG_X.faceNormal = block_mesh.normals[4];
-        FACE_POS_Y.faceNormal = block_mesh.normals[20];
-        FACE_NEG_Y.faceNormal = block_mesh.normals[16];
+        FACE_POS_Z.FaceNormal = block_mesh.normals[0];
+        FACE_NEG_Z.FaceNormal = block_mesh.normals[8];
+        FACE_POS_X.FaceNormal = block_mesh.normals[12];
+        FACE_NEG_X.FaceNormal = block_mesh.normals[4];
+        FACE_POS_Y.FaceNormal = block_mesh.normals[20];
+        FACE_NEG_Y.FaceNormal = block_mesh.normals[16];
 
         // Assign vertexIndexContainer - these are the arrays indexes that hold vertices of the block. (One Time assignment)
-        FACE_POS_Z.vertexIndexCon = new int[] { 0, 1, 2, 3 };
-        FACE_NEG_Z.vertexIndexCon = new int[] { 4, 5, 6, 7 };
-        FACE_POS_X.vertexIndexCon = new int[] { 2, 3, 4, 5 };
-        FACE_NEG_X.vertexIndexCon = new int[] { 0, 1, 6, 7 };
-        FACE_POS_Y.vertexIndexCon = new int[] { 0, 3, 4, 7 };
-        FACE_NEG_Y.vertexIndexCon = new int[] { 1, 2, 5, 6 };
+        FACE_POS_Z.VertexIndexCon = new int[] { 0, 1, 2, 3 };
+        FACE_NEG_Z.VertexIndexCon = new int[] { 4, 5, 6, 7 };
+        FACE_POS_X.VertexIndexCon = new int[] { 2, 3, 4, 5 };
+        FACE_NEG_X.VertexIndexCon = new int[] { 0, 1, 6, 7 };
+        FACE_POS_Y.VertexIndexCon = new int[] { 0, 3, 4, 7 };
+        FACE_NEG_Y.VertexIndexCon = new int[] { 1, 2, 5, 6 };
 
         // Assign edge mid points to each face.
-        FACE_POS_Z.edgeMidCollIndex = new int[] { 0, 1 };
-        FACE_NEG_Z.edgeMidCollIndex = new int[] { 2, 3 };
-        FACE_POS_X.edgeMidCollIndex = new int[] { 1, 2 };
-        FACE_NEG_X.edgeMidCollIndex = new int[] { 0, 3 };
+        FACE_POS_Z.EdgeMidCollIndex = new int[] { 0, 1 };
+        FACE_NEG_Z.EdgeMidCollIndex = new int[] { 2, 3 };
+        FACE_POS_X.EdgeMidCollIndex = new int[] { 1, 2 };
+        FACE_NEG_X.EdgeMidCollIndex = new int[] { 0, 3 };
     }
 
     void OnGUI()

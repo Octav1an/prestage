@@ -5,7 +5,7 @@ using UnityEngine;
 public class BlockFace : MonoBehaviour
 {
 
-    public int blockID
+    public int BLOCK_ID
     {
         get
         {
@@ -19,8 +19,8 @@ public class BlockFace : MonoBehaviour
             return transform.GetComponentInParent<BlockPrim>();
         }
     }
-    public bool faceActive = false;
-    public Vector3[] faceVerts;
+    public bool FaceActive = false;
+    public Vector3[] FaceVerts;
     /// <summary>
     /// Face center location for the local center. To get the global position call transform.position
     /// </summary>
@@ -28,10 +28,10 @@ public class BlockFace : MonoBehaviour
     {
         get
         {
-            if (faceVerts.Length == 4)
+            if (FaceVerts.Length == 4)
             {
-                Vector3 face_center = (faceVerts[0] + faceVerts[1] + faceVerts[2] + faceVerts[3]) / 4;
-                return face_center;
+                Vector3 faceCenter = (FaceVerts[0] + FaceVerts[1] + FaceVerts[2] + FaceVerts[3]) / 4;
+                return faceCenter;
             }
             else
             {
@@ -49,7 +49,7 @@ public class BlockFace : MonoBehaviour
             return BLOCK_COMP.transform.TransformPoint(FACE_CENTER);
         }
     }
-    private Vector3 savedFaceCenter;
+    private Vector3 _savedFaceCenter;
     /// <summary>
     /// Saved center location when the face was clicked. Used for moving face verts.
     /// </summary>
@@ -57,13 +57,13 @@ public class BlockFace : MonoBehaviour
     {
         get
         {
-            return BLOCK_COMP.transform.TransformPoint(savedFaceCenter);
+            return BLOCK_COMP.transform.TransformPoint(_savedFaceCenter);
         }
     }
     /// <summary>
     /// Indexes of the mid edge points of the face, setup in the BlockPrim.
     /// </summary>
-    public int[] edgeMidCollIndex;
+    public int[] EdgeMidCollIndex;
     /// <summary>
     /// Edge mid points of this face, referenced from parent BlockPrim.
     /// </summary>
@@ -72,8 +72,8 @@ public class BlockFace : MonoBehaviour
         get
         {
             Vector3[] coll = new Vector3[2];
-            coll[0] = BLOCK_COMP.EDGE_MID_COLL[edgeMidCollIndex[0]];
-            coll[1] = BLOCK_COMP.EDGE_MID_COLL[edgeMidCollIndex[1]];
+            coll[0] = BLOCK_COMP.EDGE_MID_COLL[EdgeMidCollIndex[0]];
+            coll[1] = BLOCK_COMP.EDGE_MID_COLL[EdgeMidCollIndex[1]];
             return coll;
         }
     }
@@ -81,8 +81,8 @@ public class BlockFace : MonoBehaviour
     /// These are the 4 container indexes that hold face's vertices and the adjacent face's verts that
     /// share the same location.
     /// </summary>
-    public int[] vertexIndexCon;
-    public Vector3 faceNormal;
+    public int[] VertexIndexCon;
+    public Vector3 FaceNormal;
     /// <summary>
     /// Get the face normal direction in world space.
     /// </summary>
@@ -90,7 +90,7 @@ public class BlockFace : MonoBehaviour
     {
         get
         {
-            return BLOCK_COMP.gameObject.transform.TransformDirection(faceNormal);
+            return BLOCK_COMP.gameObject.transform.TransformDirection(FaceNormal);
         }
     }
     /// <summary>
@@ -108,7 +108,7 @@ public class BlockFace : MonoBehaviour
     /// Save the PROJECTED_TARGET in order to create the offset necessary when starting to move the face.
     /// Getting the difference between PROJECTED_TARGET and savedProjectedTarget with cancel the jumping effect.
     /// </summary>
-    private Vector3 savedProjectedTarget;
+    private Vector3 _savedProjectedTarget;
     /// <summary>
     /// Vector between savedProjectedTarget and actualProjectedTarget, this is done in
     /// order to avoid jumping the face location when the mouse is clicked.
@@ -117,32 +117,30 @@ public class BlockFace : MonoBehaviour
     {
         get
         {
-            return PROJECTED_TARGET - savedProjectedTarget;
+            return PROJECTED_TARGET - _savedProjectedTarget;
         }
     }
-    private Vector3 moveVec = new Vector3();
 
-    private float snapDiffMag = 0;
-    bool snapZoneOn = false;
-    bool snapOn = false;
+    private bool _snapZoneOn = false;
+    private bool _snapOn = false;
     // Exact Status
-    bool exactCornerSnap = false;
-    bool exactFaceSnap = false;
+    private bool _exactCornerSnap = false;
+    private bool _exactFaceSnap = false;
     // Influence Zone
-    bool cornerSnapZone = false;
-    bool faceSnapZone = false;
-    Vector3 diffMove = new Vector3();
-
-    private bool dragThrough = false;
+    private bool _cornerSnapZone = false;
+    private bool _faceSnapZone = false;
+    // Drag fields. Vector is used to store DYNAMIC_DIFF when snapping.
+    private Vector3 _diffMove = new Vector3();
+    private bool _dragThrough = false;
 
     // Use this for initialization
     void Start()
     {
-        savedFaceCenter = FACE_CENTER;
-        savedProjectedTarget = PROJECTED_TARGET;
+        _savedFaceCenter = FACE_CENTER;
+        _savedProjectedTarget = PROJECTED_TARGET;
         if (this.name == "face_neg_y")
         {
-            foreach (int vert in vertexIndexCon)
+            foreach (int vert in VertexIndexCon)
             {
                 //print(vert);
             }
@@ -155,12 +153,12 @@ public class BlockFace : MonoBehaviour
     void Update()
     {
         UpdateFaceLoc(BLOCK_COMP.selected);
-        if (BLOCK_COMP.selected && faceActive)
+        if (BLOCK_COMP.selected && FaceActive)
         {
             if (this.name != "face_pos_y" && this.name != "face_neg_y")
             {
-                snapZoneOn = ActivateSnapZone(0.1f, 0.1f);
-                snapOn = ActivateSnap(0.1f, 0.1f);
+                _snapZoneOn = ActivateSnapZone(0.1f, 0.1f);
+                _snapOn = ActivateSnap(0.1f, 0.1f);
             }
         }
     }
@@ -168,90 +166,64 @@ public class BlockFace : MonoBehaviour
     private void LateUpdate()
     {
         // Runs after void Update.
-        if (BLOCK_COMP.selected && faceActive)
+        if (BLOCK_COMP.selected && FaceActive)
         {
             if (this.name != "face_pos_y" && this.name != "face_neg_y")
             {
-                //snapZoneOn = ActivateSnapZone(0.1f, 0.1f);
-                //snapOn = ActivateSnap(0.1f, 0.1f);
-                //MoveSnapFace(0.1f, 0.1f, 0);
-                //print(Mathf.Abs(DYNAMIC_DIFF.magnitude - diffMove.magnitude) > 0.1f);
-                //MoveFace(BLOCK_COMP.colliderName);
-                if (!snapZoneOn)
+                if (!_snapZoneOn)
                 {
-                    diffMove = DYNAMIC_DIFF;
+                    _diffMove = DYNAMIC_DIFF;
                     MoveFace(BLOCK_COMP.colliderName);
-                    dragThrough = false;
+                    _dragThrough = false;
                     //print("01");
-                }else if (snapZoneOn && !dragThrough)
+                }
+                else if (_snapZoneOn && !_dragThrough)
                 {
-                    if (!exactCornerSnap && cornerSnapZone && !exactFaceSnap)
+                    if (!_exactCornerSnap && _cornerSnapZone && !_exactFaceSnap)
                     {
-                        MoveSnapFace2(0.1f, 0.1f, 0);
+                        MoveSnapFace(0.1f, 0.1f, 0);
                         //print("02");
                     }
-                    else if (!exactFaceSnap && faceSnapZone)
+                    else if (!_exactFaceSnap && _faceSnapZone)
                     {
-                        MoveSnapFace2(0.1f, 0.1f, 0);
+                        MoveSnapFace(0.1f, 0.1f, 0);
                         //print("03");
                     }
-                    else if (exactFaceSnap && cornerSnapZone)
+                    else if (_exactFaceSnap && _cornerSnapZone)
                     {
-                        MoveSnapFace2(0.1f, 0.1f, 0);
+                        MoveSnapFace(0.1f, 0.1f, 0);
                         //print("04");
                     }
                 }
-                else if (snapZoneOn && dragThrough)
+                else if (_snapZoneOn && _dragThrough)
                 {
-                    if (exactCornerSnap)
+                    if (_exactCornerSnap)
                     {
-                        diffMove = DYNAMIC_DIFF;
+                        _diffMove = DYNAMIC_DIFF;
                         MoveFace(BLOCK_COMP.colliderName);
                     }
-                    else if (cornerSnapZone && exactFaceSnap)
+                    // If I am in cornerSnapZone, snap to corner and deactivate the drag bool.
+                    else if (_cornerSnapZone && _exactFaceSnap)
                     {
-                        MoveSnapFace2(0.1f, 0.1f, 0);
-                        dragThrough = false;
+                        MoveSnapFace(0.1f, 0.1f, 0);
+                        _dragThrough = false;
                         //print("05");
                     }
                     else
                     {
-                        diffMove = DYNAMIC_DIFF;
+                        _diffMove = DYNAMIC_DIFF;
                         MoveFace(BLOCK_COMP.colliderName);
                         //print("06");
                     }
                 }
-
-                
-
-
-                if (Mathf.Abs(DYNAMIC_DIFF.magnitude - diffMove.magnitude) > 0.1f)
+                // If the mouse is moved after snap, turn on drag bool.
+                if (Mathf.Abs(DYNAMIC_DIFF.magnitude - _diffMove.magnitude) > 0.1f)
                 {
-                    dragThrough = true;
-                    //MoveFace(BLOCK_COMP.colliderName);
+                    _dragThrough = true;
                 }
-                //if (cornerSnapZone && !exactCornerSnap)
-                //{
-                //    //MoveFace(BLOCK_COMP.colliderName, MoveSnapFace2(0.1f, 0.1f, 0));
-                //    MoveSnapFace2(0.1f, 0.1f, 0);
-                //}
-                //else if(faceSnapZone && !exactFaceSnap)
-                //{
-                //    //MoveFace(BLOCK_COMP.colliderName, MoveSnapFace2(0.1f, 0.1f, 1));
-                //    MoveSnapFace2(0.1f, 0.1f, 1);
-                //    savedProjectedTarget = PROJECTED_TARGET;
-                //}
-                //else
-                //{
-                //    savedProjectedTarget = PROJECTED_TARGET;
-                //    MoveFace(BLOCK_COMP.colliderName);
-                //}
-
-
                 //if (BLOCK_COMP.name == "Block" && this.name == "face_pos_z") print("snap: " + MoveSnapFace(0.1f, 0.1f, 0));
                 if (this.name == "face_pos_z")
                 {
-                    
                     //print("snapMag: " + snapDiffMag);
                 }
             }
@@ -264,15 +236,15 @@ public class BlockFace : MonoBehaviour
     /// </summary>
     public void UpdateOnMouseDown()
     {
-        savedFaceCenter = FACE_CENTER;
-        savedProjectedTarget = PROJECTED_TARGET;
-        if(BLOCK_COMP.colliderName == this.name) faceActive = true;
+        _savedFaceCenter = FACE_CENTER;
+        _savedProjectedTarget = PROJECTED_TARGET;
+        if(BLOCK_COMP.colliderName == this.name) FaceActive = true;
     }
 
     public void UpdateOnMouseUp()
     {
-        diffMove = new Vector3();
-         faceActive = false;
+        _diffMove = new Vector3();
+         FaceActive = false;
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -284,10 +256,10 @@ public class BlockFace : MonoBehaviour
     {
         if (this.name == colliderName)
         {
-            Vector3 moveDir = faceNormal;
+            Vector3 moveDir = FaceNormal;
             // First get the vector between savedProjectedTarget and actualProjectedTarget, this is done in
             // order to avoid jumping the face location when the mouse is clicked.
-            Vector3 diff = PROJECTED_TARGET - savedProjectedTarget;
+            Vector3 diff = PROJECTED_TARGET - _savedProjectedTarget;
             
             //if (BLOCK_COMP.name == "Block" && this.name == "face_pos_z") print("diff: " + diff.magnitude);
             if(Input.GetKeyDown(KeyCode.Z)){
@@ -296,10 +268,10 @@ public class BlockFace : MonoBehaviour
                 //print("diffMod: " + (diff + (diffMod * 10f)));
                 //diffMove += diffMod * 0.2f;
             }
-            for (int i = 0; i < vertexIndexCon.Length; i++)
+            for (int i = 0; i < VertexIndexCon.Length; i++)
             {
                 // Get the container index (Check Rhino file for these indexes).
-                int contIndex = vertexIndexCon[i];
+                int contIndex = VertexIndexCon[i];
                 // Get the actual container that stores vertix index with the same coordinates.
                 int[] vertexIndex = BLOCK_COMP.vertex_index_con[contIndex];
                 for (int j = 0; j < vertexIndex.Length; j++)
@@ -326,19 +298,20 @@ public class BlockFace : MonoBehaviour
     /// Method to move the face with adding the 'move' vector, used for faceSnap. Works only of the vertical faces.
     /// </summary>
     /// <param name="colliderName">Collider that is hit, if it is the same as this obj then run the function.</param>
+    /// <param name="move">Vector to add to the move vector, used for snap jump.</param>
     public void MoveFace(string colliderName, Vector3 move)
     {
         if (this.name == colliderName)
         {
-            Vector3 moveDir = faceNormal;
+            Vector3 moveDir = FaceNormal;
             // First get the vector between savedProjectedTarget and actualProjectedTarget, this is done in
             // order to avoid jumping the face location when the mouse is clicked.
             //Vector3 diff = (PROJECTED_TARGET + move) - savedProjectedTarget;
-            Vector3 diff = diffMove + move;
-            for (int i = 0; i < vertexIndexCon.Length; i++)
+            Vector3 diff = _diffMove + move;
+            for (int i = 0; i < VertexIndexCon.Length; i++)
             {
                 // Get the container index (Check Rhino file for these indexes).
-                int contIndex = vertexIndexCon[i];
+                int contIndex = VertexIndexCon[i];
                 // Get the actual container that stores vertix index with the same coordinates.
                 int[] vertexIndex = BLOCK_COMP.vertex_index_con[contIndex];
                 for (int j = 0; j < vertexIndex.Length; j++)
@@ -355,48 +328,6 @@ public class BlockFace : MonoBehaviour
                     
                     // Before adding the "diff" vector convert it to local sapace, otherwise it won't work when the block is rotated.
                     BLOCK_COMP.vertices[index] = BLOCK_COMP.verticesSaved[index] + BLOCK_COMP.transform.InverseTransformVector(diff);
-                    // If snap face is active move it accordingly
-                }
-            }
-            /// Update block vertices with freshly moved ones.
-            BLOCK_COMP.block_mesh.vertices = BLOCK_COMP.vertices;
-            BLOCK_COMP.UpdateProximityCollider();
-        }
-    }
-
-    //---------------------------------------------------------------------------------------------------
-    /// <summary>
-    /// Method to move the face with adding the 'move' vector, used for faceSnap. Works only of the vertical faces.
-    /// </summary>
-    /// <param name="colliderName">Collider that is hit, if it is the same as this obj then run the function.</param>
-    public void MoveFace(string colliderName, float snapMoveValue)
-    {
-        if (this.name == colliderName)
-        {
-            Vector3 moveDir = FACE_NORMAL_WORLD;
-            moveDir.Normalize();
-            Vector3 move = diffMove + (moveDir * snapMoveValue);
-            //Vector3 move = diffMove + vec;
-            for (int i = 0; i < vertexIndexCon.Length; i++)
-            {
-                // Get the container index (Check Rhino file for these indexes).
-                int contIndex = vertexIndexCon[i];
-                // Get the actual container that stores vertix index with the same coordinates.
-                int[] vertexIndex = BLOCK_COMP.vertex_index_con[contIndex];
-                for (int j = 0; j < vertexIndex.Length; j++)
-                {
-                    // Get the index of vertex from BLOCK_COMP.vertex_index_con - this represent 3 vertices 
-                    // per container that share the same location
-                    int index = vertexIndex[j];
-                    // Get the actual vertex from mesh.
-                    // When moving a face, in addition to its 4 vertices, this will move adjacent face's verts.
-
-                    //BLOCK_COMP.vertices[index] += moveDir * 0.05f;
-
-                    //if (BLOCK_COMP.name == "Block" && this.name == "face_pos_z") print(move.magnitude);
-
-                    // Before adding the "diff" vector convert it to local sapace, otherwise it won't work when the block is rotated.
-                    BLOCK_COMP.vertices[index] = BLOCK_COMP.verticesSaved[index] + BLOCK_COMP.transform.InverseTransformVector(move);
                     // If snap face is active move it accordingly
                 }
             }
@@ -459,7 +390,7 @@ public class BlockFace : MonoBehaviour
     }
 
     //---------------------------------------------------------------------------------------------------
-    private Vector3 MoveSnapFace2(float snapDist, float cornerSnap, int snapType)
+    private Vector3 MoveSnapFace(float snapDist, float cornerSnap, int snapType)
     {
         List<GameObject> list = BLOCK_COMP.PROXI_COLLIDER.closeBlocksColl;
         Vector3 moveVec2 = new Vector3();
@@ -498,7 +429,7 @@ public class BlockFace : MonoBehaviour
                     }
                 }
             }
-            print("mindist: " + Vector3.Project(moveVec2, FACE_NORMAL_WORLD).magnitude);
+            //print("mindist: " + Vector3.Project(moveVec2, FACE_NORMAL_WORLD).magnitude);
             //--------------------------------------------------------------------------
             // 1. Corner snap has the most priority.
             if (cornerSnapDist < cornerSnap)
@@ -507,7 +438,7 @@ public class BlockFace : MonoBehaviour
                 Vector3 move = Vector3.Project(closestEdgeProxi - closestEdge, FACE_NORMAL_WORLD);
                 //exactCornerSnap = true;
                 MoveFace(BLOCK_COMP.colliderName, move);
-                if (BLOCK_COMP.name == "Block" && this.name == "face_pos_z") print("Zero [" + "]: " + move.magnitude);
+                //if (BLOCK_COMP.name == "Block" && this.name == "face_pos_z") print("Zero [" + "]: " + move.magnitude);
                 return move;
             }
             // 2. Apply face snap from this as priority.
@@ -518,7 +449,7 @@ public class BlockFace : MonoBehaviour
                 Vector3 move = Vector3.Project(moveVec2, FACE_NORMAL_WORLD);
                 //exactFaceSnap = true;
                 MoveFace(BLOCK_COMP.colliderName, move);
-                if (BLOCK_COMP.name == "Block" && this.name == "face_pos_z") print("First [" + "]: " + move.magnitude);
+                //if (BLOCK_COMP.name == "Block" && this.name == "face_pos_z") print("First [" + "]: " + move.magnitude);
                 return move;
             }
             else
@@ -537,71 +468,6 @@ public class BlockFace : MonoBehaviour
     }
 
     //---------------------------------------------------------------------------------------------------
-    private Vector3 MoveSnapFace(float snapDist, float cornerSnap, int proxiIndex)
-    {
-        List<GameObject> list = (List<GameObject>)Snap()[0];
-        if (list.Count == 0)
-        {
-            //print("ops);
-            snapDiffMag = 0;
-            moveVec = new Vector3();
-            return new Vector3();
-        }
-        float closestDist = (float)Snap(proxiIndex)[4];
-        //if (BLOCK_COMP.name == "Block" && this.name == "face_pos_z") print("proxi: " + proxiIndex);
-        //--------------------------------------------------------------------------
-        // Find the closest edge of this obj and the coresponded closest edge of proxi obj that fits
-        // the snapDist comparison. (This part is used in the Corner Snap only.)
-        float cornerSnapDist = 1000;
-        Vector3 closestEdge = new Vector3();
-        Vector3 closestEdgeProxi = new Vector3();
-        for (int i = 0; i < FACE_EDGE_MID_COLL.Length; i++)
-        {
-            Vector3 edgeMidThis = FACE_EDGE_MID_COLL[i];
-            for (int j = 0; j < list[proxiIndex].GetComponent<BlockPrim>().EDGE_MID_COLL.Length; j++)
-            {
-                Vector3 edgeMidProxi = list[proxiIndex].GetComponent<BlockPrim>().EDGE_MID_COLL[j];
-                if ((edgeMidThis - edgeMidProxi).magnitude < cornerSnapDist)
-                {
-                    cornerSnapDist = (edgeMidThis - edgeMidProxi).magnitude;
-                    closestEdge = edgeMidThis;
-                    closestEdgeProxi = list[proxiIndex].GetComponent<BlockPrim>().EDGE_MID_COLL[j];
-                }
-            }
-        }
-        //--------------------------------------------------------------------------
-        // 1. Corner snap has the most priority.
-        if (cornerSnapDist < cornerSnap)
-        {
-            // Project the move vector on the face normal, to avoid shift and break the block right angles.
-            Vector3 move = Vector3.Project(closestEdgeProxi - closestEdge, FACE_NORMAL_WORLD);
-            snapDiffMag = move.magnitude;
-            moveVec = move;
-            if (BLOCK_COMP.name == "Block" && this.name == "face_pos_z") print("Zero [" + proxiIndex + "]: " + move.magnitude);
-            return move;
-        }
-        // 2. Apply face snap from this as priority.
-        // Doesn't properly work.
-        else if (Vector3.Project((Vector3)Snap(proxiIndex)[1], FACE_NORMAL_WORLD).magnitude < snapDist)
-        {
-            // Specify the proxiIndex in order for Snap() to correctly calculate closest distance.
-            Vector3 move = Vector3.Project((Vector3)Snap(proxiIndex)[1], FACE_NORMAL_WORLD);
-            snapDiffMag = move.magnitude;
-            moveVec = move;
-            if (BLOCK_COMP.name == "Block" && this.name == "face_pos_z") print("First [" + proxiIndex + "]: " + move.magnitude);
-            return move;
-        }
-        else
-        {
-            snapDiffMag = 0;
-            //print("No snap!");
-            moveVec = new Vector3();
-            return new Vector3();
-        }
-
-
-    }
-
     private bool ActivateSnapZone(float snapDist, float cornerSnap)
     {
         List<GameObject> list = BLOCK_COMP.PROXI_COLLIDER.closeBlocksColl;
@@ -641,40 +507,36 @@ public class BlockFace : MonoBehaviour
                     }
                 }
             }
-            //if (Mathf.Abs(DYNAMIC_DIFF.magnitude - diffMove.magnitude) > snapDist)
-            //{
-            //    return false;
-            //}
             //--------------------------------------------------------------------------
             // 1. Corner snap has the most priority.
             if (cornerSnapDist < cornerSnap)
             {
-                cornerSnapZone = true;
-                faceSnapZone = false;
+                _cornerSnapZone = true;
+                _faceSnapZone = false;
                 //if (BLOCK_COMP.name == "Block" && this.name == "face_pos_z") print("Zero [" + "]: " + cornerSnapDist);
                 return true;
             }
             // 2. Apply face snap from this as priority.
-            else if (minDist < snapDist)
+            else if (Vector3.Project(moveVec2, FACE_NORMAL_WORLD).magnitude < snapDist)
             {
-                cornerSnapZone = false;
-                faceSnapZone = true;
+                _cornerSnapZone = false;
+                _faceSnapZone = true;
                 //if (BLOCK_COMP.name == "Block" && this.name == "face_pos_z") print("First [" + "]: " + minDist);
                 return true;
             }
             else
             {
-                cornerSnapZone = false;
-                faceSnapZone = false;
-                //print("No snap -2- !");
+                _cornerSnapZone = false;
+                _faceSnapZone = false;
+                print("No snap -2- !");
                 return false;
             }
         }
         else
         {
-            cornerSnapZone = false;
-            faceSnapZone = false;
-            //print("No snap!");
+            _cornerSnapZone = false;
+            _faceSnapZone = false;
+            print("No snap!");
             return false;
         }
     }
@@ -724,31 +586,31 @@ public class BlockFace : MonoBehaviour
             if (cornerSnapDist < 0.0001f)
             {
                 //if (BLOCK_COMP.name == "Block" && this.name == "face_pos_z") print("Zero [" + "]: " + cornerSnapDist);
-                exactCornerSnap = true;
-                exactFaceSnap = false;
+                _exactCornerSnap = true;
+                _exactFaceSnap = false;
                 return false;
             }
             // 2. Apply face snap from this as priority.
-            else if (minDist < 0.0001f)
+            else if (Vector3.Project(moveVec2, FACE_NORMAL_WORLD).magnitude < 0.0001f)
             {
                 //if (BLOCK_COMP.name == "Block" && this.name == "face_pos_z") print("First [" + "]: " + minDist);
-                exactCornerSnap = false;
-                exactFaceSnap = true;
+                _exactCornerSnap = false;
+                _exactFaceSnap = true;
                 return true;
             }
             else
             {
                 //print("No snap -2- !");
-                exactCornerSnap = false;
-                exactFaceSnap = false;
+                _exactCornerSnap = false;
+                _exactFaceSnap = false;
                 return false;
             }
         }
         else
         {
             //print("No snap!");
-            exactCornerSnap = false;
-            exactFaceSnap = false;
+            _exactCornerSnap = false;
+            _exactFaceSnap = false;
             return false;
         }
     }
