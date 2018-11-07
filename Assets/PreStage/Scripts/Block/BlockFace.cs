@@ -146,7 +146,7 @@ public class BlockFace : MonoBehaviour
                     MoveFace(BLOCK_COMP.colliderName, MoveSnapFace(0.1f, 0.1f, i));
                 }
                 //BLOCK_COMP.UpdateBlockCollider();
-                BLOCK_COMP.UpdateProximityCollider();
+                //BLOCK_COMP.UpdateProximityCollider();
                 if (this.name == "face_neg_z")
                 {
                     List<GameObject> list = (List<GameObject>)Snap()[0];
@@ -238,7 +238,7 @@ public class BlockFace : MonoBehaviour
                     // order to avoid jumping the face location when the mouse is clicked.
                     
                     Vector3 diff = (PROJECTED_TARGET + move) - savedProjectedTarget;
-                    BLOCK_COMP.UpdateBlockCollider();
+                    //BLOCK_COMP.UpdateBlockCollider();
                     // Before adding the "diff" vector convert it to local sapace, otherwise it won't work when the block is rotated.
                     BLOCK_COMP.vertices[index] = BLOCK_COMP.verticesSaved[index] + BLOCK_COMP.transform.InverseTransformVector(diff);
                     // If snap face is active move it accordingly
@@ -319,7 +319,6 @@ public class BlockFace : MonoBehaviour
         float cornerSnapDist = 1000;
         Vector3 closestEdge = new Vector3();
         Vector3 closestEdgeProxi = new Vector3();
-
         for (int i = 0; i < FACE_EDGE_MID_COLL.Length; i++)
         {
             Vector3 edgeMidThis = FACE_EDGE_MID_COLL[i];
@@ -334,20 +333,13 @@ public class BlockFace : MonoBehaviour
                 }
             }
         }
-        List<GameObject> listParent = (List<GameObject>)BLOCK_COMP.MoveSnapBuildup(proxiIndex)[0];
-
-        Vector3 vec = (Vector3)listParent[proxiIndex].GetComponent<BlockPrim>().MoveSnapBuildup(proxiIndex)[2];
-        //print("mag: " + (float)listParent[proxiIndex].GetComponent<BlockPrim>().MoveSnapBuildup(0)[4]);
-        //print("vec: " + vec.magnitude);
-        //print(Vector3.Project( vec, FACE_CENTER_WORLD).magnitude);
-
         //--------------------------------------------------------------------------
         // 1. Corner snap has the most priority.
         if (cornerSnapDist < cornerSnap)
         {
             // Project the move vector on the face normal, to avoid shift and break the block right angles.
             Vector3 move = Vector3.Project(closestEdgeProxi - closestEdge, FACE_NORMAL_WORLD);
-            //print("Zero [" + proxiIndex + "]: " + move.magnitude);
+            print("Zero [" + proxiIndex + "]: " + move.magnitude);
             return move;
         }
         // 2. Apply face snap from this as priority.
@@ -356,18 +348,16 @@ public class BlockFace : MonoBehaviour
         {
             // Specify the proxiIndex in order for Snap() to correctly calculate closest distance.
             Vector3 move = Vector3.Project((Vector3)Snap(proxiIndex)[1], FACE_NORMAL_WORLD);
-            //print("First [" + proxiIndex + "]: " + move.magnitude);
+            print("First [" + proxiIndex + "]: " + move.magnitude);
             return move;
         }
         // 3. Apply face snap from other proxi objects as priority.
-        // Doesn't properly work.
-        else if ((float)list[proxiIndex].GetComponent<BlockPrim>().MoveSnapBuildup(proxiIndex)[4] < snapDist)
+        else if (Vector3.Project((Vector3)Snap(proxiIndex)[1], FACE_NORMAL_WORLD).magnitude < snapDist)
         {
-            Vector3 move = (Vector3)list[proxiIndex].GetComponent<BlockPrim>().MoveSnapBuildup()[1];
-            print("Second [" + proxiIndex + "]: " + move.magnitude);
-            //return Vector3.Project(move, FACE_NORMAL_WORLD);
-            return Vector3.Project(-move, FACE_NORMAL_WORLD);
-            //return -move;
+            Vector3 move = (Vector3)Snap(proxiIndex)[1];
+            print("Second [" + proxiIndex + "]: " + Vector3.Project(move, FACE_NORMAL_WORLD).magnitude);
+            // Project the move vector from Snap() on FaceNormal, otherwise it will move diagonaly.
+            return Vector3.Project(move, FACE_NORMAL_WORLD);
         }
         else
         {
