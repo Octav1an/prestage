@@ -636,7 +636,6 @@ public class BlockPrim : MonoBehaviour {
     {
         Ray rayPlane = Camera.main.ScreenPointToRay(Input.mousePosition);
         float point = 0f;
-
         if (_movePlane.Raycast(rayPlane, out point))
         {
             // Return the point in world space that intersects with this plane.
