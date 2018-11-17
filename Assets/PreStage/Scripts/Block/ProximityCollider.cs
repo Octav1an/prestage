@@ -44,8 +44,8 @@ public class ProximityCollider : MonoBehaviour
     {
         GUI.color = new Color(1f, 0.1f, 0f, 1f);
         if(this.transform.parent.name == "Block" &&
-            closeBlocksColl.Count > 0)GUI.Label(new Rect(20, 50, 400, 100), ("ProxiBlock 0: " + closeBlocksColl[0].GetComponent<BlockPrim>().blockID));
+            closeBlocksColl.Count > 0)GUI.Label(new Rect(20, 50, 400, 100), ("ProxiBlock 0: " + closeBlocksColl[0].GetComponent<BlockPrim>().BlockId));
         if (this.transform.parent.name == "Block" &&
-            closeBlocksColl.Count == 2) GUI.Label(new Rect(20, 70, 400, 100), ("ProxiBlock 1: " + closeBlocksColl[1].GetComponent<BlockPrim>().blockID));
+            closeBlocksColl.Count == 2) GUI.Label(new Rect(20, 70, 400, 100), ("ProxiBlock 1: " + closeBlocksColl[1].GetComponent<BlockPrim>().BlockId));
     }
 }

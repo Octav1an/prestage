@@ -4,13 +4,33 @@ using UnityEngine;
 
 public class Manager : MonoBehaviour {
 
-    public static Manager instance;
-
-    public static List<GameObject> COLL_BLOCKS_OBJECTS = new List<GameObject>();
+    public static Manager Instance;
+    /// <summary>
+    /// Get the name for the collider hit by the ray.
+    /// </summary>
+    public string GET_COLLIDER_NAME
+    {
+        get
+        {
+            _ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(_ray, out _hit))
+            {
+                return _hit.collider.name;
+            }
+            else
+            {
+                return null;
+            }
+        }
+    }
+    /// <summary>
+    /// List with all the objects that are drawn on the canvas.
+    /// </summary>
+    public static List<GameObject> CollBlocksObjects = new List<GameObject>();
     /// <summary>
     /// Store location of mouse when right click is pressed.
     /// </summary>
-    public static Vector3 savedMouseLoc = new Vector3();
+    public static Vector3 SavedMouseLoc = new Vector3();
     /// <summary>
     /// Get the vector that represents difference between last mouse location and current mouse location
     /// </summary>
@@ -18,13 +38,13 @@ public class Manager : MonoBehaviour {
     {
         get
         {
-            if(savedMouseLoc.x == 0 && savedMouseLoc.y == 0)
+            if(SavedMouseLoc.x == 0 && SavedMouseLoc.y == 0)
             {
                 return new Vector3();
             }
             else
             {
-                return Input.mousePosition - savedMouseLoc;
+                return Input.mousePosition - SavedMouseLoc;
             }
         }
     }
@@ -35,19 +55,23 @@ public class Manager : MonoBehaviour {
             return GameObject.FindGameObjectWithTag("Ground");
         }
     }
-    public GameObject blockPrefab;
-
-    Ray ray;
-    RaycastHit hit;
+    /// <summary>
+    /// Block prefab used to instanciate new blocks.
+    /// </summary>
+    public GameObject BlockPrefab;
+    //--------------------------------------------
+    private static Ray _ray;
+    private static RaycastHit _hit;
+    //--------------------------------------------
 
     private void Awake()
     {
         // Makes sure that I use always a game control even if my next scence already has one.
         // The instance of the object from the scene that is current will persist in the next scene.
-        if (instance == null)
+        if (Instance == null)
         {
             DontDestroyOnLoad(gameObject);
-            instance = this;
+            Instance = this;
         }
         CountAndStoreBlocks();
     }
@@ -65,7 +89,7 @@ public class Manager : MonoBehaviour {
         OnMouseDownGlobal();
         OnMouseUpGlobal();
         //--------------------------------------------
-        foreach (GameObject obj in COLL_BLOCKS_OBJECTS)
+        foreach (GameObject obj in CollBlocksObjects)
         {
             //print(obj.GetComponent<BlockPrim>().selected);
         }
@@ -108,29 +132,36 @@ public class Manager : MonoBehaviour {
         {
             //-------------------------------------------------------
             // Update the colliderName when MouseDown.
-            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out hit))
+            _ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(_ray, out _hit))
             {
-                SelectBlock(hit);
+                SelectBlock(_hit);
             }
 
         }
     }
 
+    //---------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Crate a block. Used in button.
+    /// </summary>
     public void CreateBlock()
     {
-        GameObject fresh_obj = (GameObject)Instantiate(blockPrefab, new Vector3(), Quaternion.identity);
-        COLL_BLOCKS_OBJECTS.Add(fresh_obj);
+        GameObject freshObj = (GameObject)Instantiate(BlockPrefab, new Vector3(), Quaternion.identity);
+        CollBlocksObjects.Add(freshObj);
     }
 
-    void SelectBlock(RaycastHit _hit)
+    //---------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Select the block I am hitting.
+    /// </summary>
+    /// <param name="hit">Raycast hit.</param>
+    void SelectBlock(RaycastHit hit)
     {
         if (hit.collider.tag == "BlockFace")
         {
             BlockPrim block = hit.collider.gameObject.GetComponent<BlockFace>().BLOCK_COMP;
-            block.selected = true;
-            //print(block.selected);
-            //print(hit.collider.gameObject.GetComponent<BlockFace>().blockID);
+            block.Selected = true;
         }
         else
         {
@@ -142,23 +173,8 @@ public class Manager : MonoBehaviour {
     {
         if (Input.GetMouseButtonDown(0))
         {
-            savedMouseLoc = Input.mousePosition;
+            SavedMouseLoc = Input.mousePosition;
         }
-    }
-
-    public static Vector3 GetProjectedOnGround(Vector3 loc)
-    {
-        if (loc != null)
-        {
-            BoxCollider groundCollider = GROUND.GetComponent<BoxCollider>();
-            Vector3 closestPoint = groundCollider.ClosestPoint(loc);
-            return closestPoint;
-        }
-        else
-        {
-            return new Vector3();
-        }
-
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -171,7 +187,7 @@ public class Manager : MonoBehaviour {
         GameObject[] alreadyCreated = GameObject.FindGameObjectsWithTag("BlockPrim");
         foreach (GameObject obj in alreadyCreated)
         {
-            COLL_BLOCKS_OBJECTS.Add(obj);
+            CollBlocksObjects.Add(obj);
         }
 
     }

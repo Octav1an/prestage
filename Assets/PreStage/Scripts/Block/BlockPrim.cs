@@ -10,8 +10,18 @@ public class BlockPrim : MonoBehaviour {
     /// Block ID in the list that stores all existing blocks. This is not uniq, because
     /// the list can be dynamicaly updated.
     /// </summary>
-    public int blockID = -1;
-
+    public int BlockId = -1;
+    /// <summary>
+    /// Bool that is activated when the block is selected. Now works when the block is moved.
+    /// </summary>
+    public bool Selected = false;
+    /// <summary>
+    /// Manager of the scene.
+    /// </summary>
+    public Manager MANAGER
+    {
+        get { return GameObject.FindGameObjectWithTag("Manager").GetComponent<Manager>(); }
+    }
     //Vertex Array, use only geting the vertices. This property cannot rewrite them.
     public Vector3[] VERTS_COLL
     {
@@ -26,86 +36,86 @@ public class BlockPrim : MonoBehaviour {
     {
         get
         {
-            Vector3[] face_pos_z = new Vector3[4];
-            face_pos_z[0] = VERTS_COLL[0];
-            face_pos_z[1] = VERTS_COLL[1];
-            face_pos_z[2] = VERTS_COLL[2];
-            face_pos_z[3] = VERTS_COLL[3];
-            return face_pos_z;
+            Vector3[] facePosZ = new Vector3[4];
+            facePosZ[0] = VERTS_COLL[0];
+            facePosZ[1] = VERTS_COLL[1];
+            facePosZ[2] = VERTS_COLL[2];
+            facePosZ[3] = VERTS_COLL[3];
+            return facePosZ;
         }
     }
     public Vector3[] FACE_VERTS_NEG_Z
     {
         get
         {
-            Vector3[] face_neg_z = new Vector3[4];
-            face_neg_z[0] = VERTS_COLL[8];
-            face_neg_z[1] = VERTS_COLL[9];
-            face_neg_z[2] = VERTS_COLL[10];
-            face_neg_z[3] = VERTS_COLL[11];
-            return face_neg_z;
+            Vector3[] faceNegZ = new Vector3[4];
+            faceNegZ[0] = VERTS_COLL[8];
+            faceNegZ[1] = VERTS_COLL[9];
+            faceNegZ[2] = VERTS_COLL[10];
+            faceNegZ[3] = VERTS_COLL[11];
+            return faceNegZ;
         }
     }
     public Vector3[] FACE_VERTS_POS_X
     {
         get
         {
-            Vector3[] face_pos_x = new Vector3[4];
-            face_pos_x[0] = VERTS_COLL[12];
-            face_pos_x[1] = VERTS_COLL[13];
-            face_pos_x[2] = VERTS_COLL[14];
-            face_pos_x[3] = VERTS_COLL[15];
-            return face_pos_x;
+            Vector3[] facePosX = new Vector3[4];
+            facePosX[0] = VERTS_COLL[12];
+            facePosX[1] = VERTS_COLL[13];
+            facePosX[2] = VERTS_COLL[14];
+            facePosX[3] = VERTS_COLL[15];
+            return facePosX;
         }
     }
     public Vector3[] FACE_VERTS_NEG_X
     {
         get
         {
-            Vector3[] face_neg_x = new Vector3[4];
-            face_neg_x[0] = VERTS_COLL[4];
-            face_neg_x[1] = VERTS_COLL[5];
-            face_neg_x[2] = VERTS_COLL[6];
-            face_neg_x[3] = VERTS_COLL[7];
-            return face_neg_x;
+            Vector3[] faceNegX = new Vector3[4];
+            faceNegX[0] = VERTS_COLL[4];
+            faceNegX[1] = VERTS_COLL[5];
+            faceNegX[2] = VERTS_COLL[6];
+            faceNegX[3] = VERTS_COLL[7];
+            return faceNegX;
         }
     }
     public Vector3[] FACE_VERTS_POS_Y
     {
         get
         {
-            Vector3[] face_pos_y = new Vector3[4];
-            face_pos_y[0] = VERTS_COLL[20];
-            face_pos_y[1] = VERTS_COLL[21];
-            face_pos_y[2] = VERTS_COLL[22];
-            face_pos_y[3] = VERTS_COLL[23];
-            return face_pos_y;
+            Vector3[] facePosY = new Vector3[4];
+            facePosY[0] = VERTS_COLL[20];
+            facePosY[1] = VERTS_COLL[21];
+            facePosY[2] = VERTS_COLL[22];
+            facePosY[3] = VERTS_COLL[23];
+            return facePosY;
         }
     }
     public Vector3[] FACE_VERTS_NEG_Y
     {
         get
         {
-            Vector3[] face_neg_y = new Vector3[4];
-            face_neg_y[0] = VERTS_COLL[16];
-            face_neg_y[1] = VERTS_COLL[17];
-            face_neg_y[2] = VERTS_COLL[18];
-            face_neg_y[3] = VERTS_COLL[19];
-            return face_neg_y;
+            Vector3[] faceNegY = new Vector3[4];
+            faceNegY[0] = VERTS_COLL[16];
+            faceNegY[1] = VERTS_COLL[17];
+            faceNegY[2] = VERTS_COLL[18];
+            faceNegY[3] = VERTS_COLL[19];
+            return faceNegY;
         }
     }
     public Vector3[][] BLOCK_FACE_VERTS
     {
         get
         {
-            Vector3[][] block_face_coll = new Vector3[6][];
-            block_face_coll[0] = FACE_VERTS_POS_Z;
-            block_face_coll[1] = FACE_VERTS_NEG_Z;
-            block_face_coll[2] = FACE_VERTS_POS_X;
-            block_face_coll[3] = FACE_VERTS_NEG_X;
-            block_face_coll[4] = FACE_VERTS_POS_Y;
-            block_face_coll[5] = FACE_VERTS_NEG_Y;
-            return block_face_coll;
+            Vector3[][] blockFaceColl = new Vector3[6][];
+            blockFaceColl[0] = FACE_VERTS_POS_Z;
+            blockFaceColl[1] = FACE_VERTS_NEG_Z;
+            blockFaceColl[2] = FACE_VERTS_POS_X;
+            blockFaceColl[3] = FACE_VERTS_NEG_X;
+            blockFaceColl[4] = FACE_VERTS_POS_Y;
+            blockFaceColl[5] = FACE_VERTS_NEG_Y;
+            return blockFaceColl;
         }
     }
 
@@ -254,28 +264,28 @@ public class BlockPrim : MonoBehaviour {
     {
         get
         {
-            return this.transform.TransformPoint((vertices[0] + vertices[1]) / 2);
+            return this.transform.TransformPoint((Vertices[0] + Vertices[1]) / 2);
         }
     }
     public Vector3 EDGE_MID_PT1_WORLD
     {
         get
         {
-            return this.transform.TransformPoint((vertices[3] + vertices[2]) / 2);
+            return this.transform.TransformPoint((Vertices[3] + Vertices[2]) / 2);
         }
     }
     public Vector3 EDGE_MID_PT2_WORLD
     {
         get
         {
-            return this.transform.TransformPoint((vertices[8] + vertices[9]) / 2);
+            return this.transform.TransformPoint((Vertices[8] + Vertices[9]) / 2);
         }
     }
     public Vector3 EDGE_MID_PT3_WORLD
     {
         get
         {
-            return this.transform.TransformPoint((vertices[11] + vertices[10]) / 2);
+            return this.transform.TransformPoint((Vertices[11] + Vertices[10]) / 2);
         }
     }
     public Vector3[] EDGE_MID_COLL
@@ -305,7 +315,7 @@ public class BlockPrim : MonoBehaviour {
     /// This represend collection of indexes for vertices that share the same coordinate. Think about them as Block's 8 vertices.
     /// Check Rhino file to see to which container each vertex belongs.
     /// </summary>
-    public int[][] vertex_index_con = new int[][]
+    public int[][] VertexIndexCon = new int[][]
     {
         new int[] {0, 7, 21},
         new int[] {1, 6, 19},
@@ -346,8 +356,6 @@ public class BlockPrim : MonoBehaviour {
             return center / 24;
         }
     }
-    public GameObject center_obj;
-    public GameObject prj_obj;
     /// <summary>
     /// Dimension of the block on Z direction in local space.
     /// </summary>
@@ -355,7 +363,7 @@ public class BlockPrim : MonoBehaviour {
     {
         get
         {
-            return (vertices[0] - vertices[11]).magnitude;
+            return (Vertices[0] - Vertices[11]).magnitude;
         }
     }
     /// <summary>
@@ -365,22 +373,18 @@ public class BlockPrim : MonoBehaviour {
     {
         get
         {
-            return (vertices[4] - vertices[15]).magnitude;
+            return (Vertices[4] - Vertices[15]).magnitude;
         }
     }
 
-    public bool selected = false;
-
-    Ray ray;
-    RaycastHit hit;
     /// <summary>
     /// Plane that is used to move the object, it is equal to block centroid.
     /// </summary>
-    private Plane movePlane;
+    private Plane _movePlane;
     /// <summary>
     /// Saved the location of intersection between mouse ray with movePlane. Used for moving the block.
     /// </summary>
-    public Vector3 savedMoveTarget;
+    private Vector3 _savedMoveTarget;
     /// <summary>
     /// Intersection position between plane and mouse ray that is used for horizontal movements of block and faces.
     /// </summary>
@@ -395,40 +399,40 @@ public class BlockPrim : MonoBehaviour {
     /// <summary>
     /// Block's mesh component.
     /// </summary>
-    public Mesh block_mesh;
+    public Mesh BlockMesh;
     /// <summary>
     /// Block mesh vertices, use this to transform vertices location.
     /// </summary>
-    public Vector3[] vertices;
+    public Vector3[] Vertices;
     /// <summary>
     /// Saved block's vertices, used to create the movement vector.
     /// </summary>
-    public Vector3[] verticesSaved;
+    public Vector3[] VerticesSaved;
     /// <summary>
     /// Saved location of the block. It is saved during MouseDown event.
     /// </summary>
-    private Vector3 savedBlockLoc;
+    private Vector3 _savedBlockLoc;
     /// <summary>
     /// String that stores the name of the hit collider untill the mouse is released.
     /// </summary>
-    public String colliderName;
+    public String ColliderName;
 
 
     // Use this for initialization
     void Start () {
         //--------------------------------------------
-        savedBlockLoc = this.transform.position;
-        block_mesh = GetComponent<MeshFilter>().mesh;
-        vertices = block_mesh.vertices;
-        verticesSaved = block_mesh.vertices;
-        if (blockID == -1) blockID = Manager.COLL_BLOCKS_OBJECTS.IndexOf(gameObject);
-        savedMoveTarget = SetTarggetPosition();
-        movePlane = new Plane(Vector3.up, this.transform.position);
+        _savedBlockLoc = this.transform.position;
+        BlockMesh = GetComponent<MeshFilter>().mesh;
+        Vertices = BlockMesh.vertices;
+        VerticesSaved = BlockMesh.vertices;
+        if (BlockId == -1) BlockId = Manager.CollBlocksObjects.IndexOf(gameObject);
+        _savedMoveTarget = SetTarggetPosition();
+        _movePlane = new Plane(Vector3.up, this.transform.position);
         SetUpIndividualFaces();
         UpdateBlockCollider();
         UpdateProximityCollider();
         //--------------------------------------------
-        foreach (Vector3 vertex in vertices)
+        foreach (Vector3 vertex in Vertices)
         {
             //Debug.Log(vertex);
         }
@@ -439,24 +443,23 @@ public class BlockPrim : MonoBehaviour {
     {
         if (Input.GetKey(KeyCode.T))
         {
-            Vector3 moveDir = block_mesh.normals[0];
+            Vector3 moveDir = BlockMesh.normals[0];
 
             for (int i = 0; i < 3; i++)
             {
                 //vertices[i] += moveDir * 0.05f;
-                vertices[vertex_index_con[0][i]] += moveDir * 0.05f;
-                vertices[vertex_index_con[1][i]] += moveDir * 0.05f;
-                vertices[vertex_index_con[2][i]] += moveDir * 0.05f;
-                vertices[vertex_index_con[3][i]] += moveDir * 0.05f;
+                Vertices[VertexIndexCon[0][i]] += moveDir * 0.05f;
+                Vertices[VertexIndexCon[1][i]] += moveDir * 0.05f;
+                Vertices[VertexIndexCon[2][i]] += moveDir * 0.05f;
+                Vertices[VertexIndexCon[3][i]] += moveDir * 0.05f;
             }
             // Update block vertices with freshly moved ones.
-            block_mesh.vertices = vertices;
+            BlockMesh.vertices = Vertices;
         }
         if (Input.GetKey(KeyCode.O))
         {
             this.transform.Translate(new Vector3(0.1f, 0, 0), Space.World);
         }
-        //if(center_obj) center_obj.transform.position = GEOMETRIC_CENTER_WORLD;
     }
 
     private void LateUpdate()
@@ -464,7 +467,7 @@ public class BlockPrim : MonoBehaviour {
         // By having these function inside LateUpdate - I make sure that first the select boolean is triggered by 
         // Manager and then run these function.
         // Here run methods when the block is selected only.
-        if (selected)
+        if (Selected)
         {
             UpdateFaceVerts();
             OnMouseUpLocal();
@@ -475,12 +478,6 @@ public class BlockPrim : MonoBehaviour {
             {
                 MoveBlock();
                 RotateBlock();
-                //List<GameObject> list = (List<GameObject>)Snap2()[0];
-                //print("Proximity objects: " + list.Count);
-                //print("Closest Move Vector: " + Snap2()[1]);
-                //print("Closest Vector: " + Snap2()[2]);
-                //print("Closest Index: " + Snap2()[3]);
-                //print("Closest Dist: " + Snap2()[4]);
             }
         }
     }
@@ -506,16 +503,16 @@ public class BlockPrim : MonoBehaviour {
         Vector3 closestVec = new Vector3();
         float closestDist = 1000;
         int closestIndex = -1;
-        Vector3[] coll_closest = new Vector3[4];
+        Vector3[] collClosest = new Vector3[4];
         if (closeBlocksColl.Count > 0)
         {
             // Check the closest vector from this to the proximity objects.
             for (int i = 0; i < EDGE_MID_COLL.Length; i++)
             {
-                coll_closest[i] = closeBlocksColl[proxiIndex].GetComponent<BoxCollider>().ClosestPoint(EDGE_MID_COLL[i]);
-                if ((coll_closest[i] - EDGE_MID_COLL[i]).magnitude < closestDist)
+                collClosest[i] = closeBlocksColl[proxiIndex].GetComponent<BoxCollider>().ClosestPoint(EDGE_MID_COLL[i]);
+                if ((collClosest[i] - EDGE_MID_COLL[i]).magnitude < closestDist)
                 {
-                    closestDist = (coll_closest[i] - EDGE_MID_COLL[i]).magnitude;
+                    closestDist = (collClosest[i] - EDGE_MID_COLL[i]).magnitude;
                     closestVec = EDGE_MID_COLL[i];
                     closestIndex = i;
                 }
@@ -523,13 +520,13 @@ public class BlockPrim : MonoBehaviour {
             }
 
             // The vector between EdgePt and projection on ProxiObj of this EdgePt.
-            Vector3 moveVector =  coll_closest[closestIndex] - closestVec;
+            Vector3 moveVector =  collClosest[closestIndex] - closestVec;
 
             returnObj.Add(moveVector);
             returnObj.Add(closestVec);
             returnObj.Add(closestIndex);
             returnObj.Add(closestDist);
-            returnObj.Add(coll_closest);
+            returnObj.Add(collClosest);
         }
         return returnObj;
     }
@@ -543,17 +540,17 @@ public class BlockPrim : MonoBehaviour {
         if (Input.GetMouseButtonUp(0))
         {
             // Reset the collider name to empty.
-            colliderName = "";
-            verticesSaved = block_mesh.vertices;
+            ColliderName = "";
+            VerticesSaved = BlockMesh.vertices;
             // Reset the selection
-            selected = false;
+            Selected = false;
             UpdateBlockCollider();
             UpdateProximityCollider();
 
             // Recomanded by Unity to recalculate this things after mesh is changed.
-            block_mesh.RecalculateBounds();
-            block_mesh.RecalculateNormals();
-            block_mesh.RecalculateTangents();
+            BlockMesh.RecalculateBounds();
+            BlockMesh.RecalculateNormals();
+            BlockMesh.RecalculateTangents();
 
             //-------------------------------------------------------
             // Update info for face variables when mouse up.
@@ -574,17 +571,10 @@ public class BlockPrim : MonoBehaviour {
         if (Input.GetMouseButtonDown(0))
         {
             //print("BlockID: " + blockID);
-            savedBlockLoc = this.transform.position;
-            savedMoveTarget = SetTarggetPosition();
-
-            //-------------------------------------------------------
+            _savedBlockLoc = this.transform.position;
+            _savedMoveTarget = SetTarggetPosition();
             // Update the colliderName when MouseDown.
-            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out hit))
-            {
-                colliderName = hit.collider.name;
-                
-            }
+            ColliderName = MANAGER.GET_COLLIDER_NAME;
             //-------------------------------------------------------
             // Save location for several things inside BlockFace. Like FaceCenter.
             foreach (BlockFace face in FACE_COLL)
@@ -623,7 +613,7 @@ public class BlockPrim : MonoBehaviour {
     //---------------------------------------------------------------------------------------------------
     private void RotateBlock()
     {
-        if (colliderName == "face_pos_y")
+        if (ColliderName == "face_pos_y")
         {
             if (Input.GetKey(KeyCode.N))
             {
@@ -646,8 +636,7 @@ public class BlockPrim : MonoBehaviour {
     {
         Ray rayPlane = Camera.main.ScreenPointToRay(Input.mousePosition);
         float point = 0f;
-
-        if (movePlane.Raycast(rayPlane, out point))
+        if (_movePlane.Raycast(rayPlane, out point))
         {
             // Return the point in world space that intersects with this plane.
             return rayPlane.GetPoint(point);
@@ -664,20 +653,27 @@ public class BlockPrim : MonoBehaviour {
     /// </summary>
     private void MoveBlock()
     {
-        if(colliderName == "face_pos_y")
+        if(ColliderName == "face_pos_y")
         {
             //if(Input.GetMouseButton(0)) SetTarggetPosition();
-            transform.position = savedBlockLoc + (SetTarggetPosition() - savedMoveTarget);
+            transform.position = _savedBlockLoc + (SetTarggetPosition() - _savedMoveTarget);
             
             for(int i = 0; i < ((List<GameObject>)MoveSnapBuildup()[0]).Count; i++)
             {
-                MoveBlockToSnap(0.2f, 0.2f, i, true);
+                MoveBlockToSnap(0.2f, 0.2f, i);
             }
-
         }
     }
 
-    private float MoveBlockToSnap(float snapDist, float cornerSnap, int proxiIndex, bool activMove)
+    //-----------------------------------------------SNAP BLOCK----------------------------------------------------
+    /// <summary>
+    /// Method that snaps this block when it is within snap zone.
+    /// </summary>
+    /// <param name="snapDist">Snap distance for face snap.</param>
+    /// <param name="cornerSnap">Snap distance for corner snap.</param>
+    /// <param name="proxiIndex">Index of the proxi blocks within snap zone.</param>
+    /// <returns></returns>
+    private float MoveBlockToSnap(float snapDist, float cornerSnap, int proxiIndex)
     {
         List<GameObject> list = (List<GameObject>)MoveSnapBuildup()[0];
         float closestDist = (float)MoveSnapBuildup(proxiIndex)[4];
@@ -710,11 +706,8 @@ public class BlockPrim : MonoBehaviour {
         if (cornerSnapDist < cornerSnap)
         {
             Vector3 move = closestEdgeProxi - closestEdge;
-            if (activMove)
-            {
-                this.transform.Translate(move, Space.World);
-                //print("Zero [" + proxiIndex + "]: " + move.magnitude);
-            }
+            this.transform.Translate(move, Space.World);
+            //print("Zero [" + proxiIndex + "]: " + move.magnitude);
             return move.magnitude;
         }
         // 2. Apply face snap from this as priority.
@@ -722,11 +715,8 @@ public class BlockPrim : MonoBehaviour {
         {
             // Specify the proxiIndex in order for Snap() to correctly calculate closest distance.
             Vector3 move = (Vector3)MoveSnapBuildup(proxiIndex)[1];
-            if (activMove)
-            {
-                this.transform.Translate(move, Space.World);
-                //print("First [" + proxiIndex + "]: " + move.magnitude);
-            }
+            this.transform.Translate(move, Space.World);
+            //print("First [" + proxiIndex + "]: " + move.magnitude);
             return move.magnitude;
         }
         // 3. Apply face snap from other proxi objects as priority.
@@ -734,11 +724,8 @@ public class BlockPrim : MonoBehaviour {
         else if ((float)list[proxiIndex].GetComponent<BlockPrim>().MoveSnapBuildup(proxiIndex)[4] < snapDist)
         {
             Vector3 move = (Vector3)list[proxiIndex].GetComponent<BlockPrim>().MoveSnapBuildup(proxiIndex)[1];
-            if (activMove)
-            {
-                this.transform.Translate(-move, Space.World);
-                //print("Second [" + proxiIndex + "]: " + move.magnitude);
-            }
+            this.transform.Translate(-move, Space.World);
+            //print("Second [" + proxiIndex + "]: " + move.magnitude);
             return move.magnitude;
         }
         else
@@ -763,15 +750,23 @@ public class BlockPrim : MonoBehaviour {
         FACE_NEG_Y.FaceVerts = FACE_VERTS_NEG_Y;
 
         // Assign FaceNormals (Update)
-        FACE_POS_Z.FaceNormal = block_mesh.normals[0];
-        FACE_NEG_Z.FaceNormal = block_mesh.normals[8];
-        FACE_POS_X.FaceNormal = block_mesh.normals[12];
-        FACE_NEG_X.FaceNormal = block_mesh.normals[4];
-        FACE_POS_Y.FaceNormal = block_mesh.normals[20];
-        FACE_NEG_Y.FaceNormal = block_mesh.normals[16];
+        FACE_POS_Z.FaceNormal = BlockMesh.normals[0];
+        FACE_NEG_Z.FaceNormal = BlockMesh.normals[8];
+        FACE_POS_X.FaceNormal = BlockMesh.normals[12];
+        FACE_NEG_X.FaceNormal = BlockMesh.normals[4];
+        FACE_POS_Y.FaceNormal = BlockMesh.normals[20];
+        FACE_NEG_Y.FaceNormal = BlockMesh.normals[16];
     }
 
     //---------------------------------------------------------------------------------------------------
+    /// <summary>
+    /// Set up the variables for each face, like what vertice indexes it has.
+    /// 1. Find and assign the faces in this object.
+    /// 2. Assign vertices to each face class.
+    /// 3. Assign face normals to each face class.
+    /// 4. Assign vertexIndexContainer.
+    /// 5. Assign edge mid points indexes to each face.
+    /// </summary>
     private void SetUpIndividualFaces()
     {
         // Find and assign face objects to properties in this class.
@@ -797,12 +792,12 @@ public class BlockPrim : MonoBehaviour {
         FACE_NEG_Y.FaceVerts = FACE_VERTS_NEG_Y;
 
         // Assign FaceNormals (Update)
-        FACE_POS_Z.FaceNormal = block_mesh.normals[0];
-        FACE_NEG_Z.FaceNormal = block_mesh.normals[8];
-        FACE_POS_X.FaceNormal = block_mesh.normals[12];
-        FACE_NEG_X.FaceNormal = block_mesh.normals[4];
-        FACE_POS_Y.FaceNormal = block_mesh.normals[20];
-        FACE_NEG_Y.FaceNormal = block_mesh.normals[16];
+        FACE_POS_Z.FaceNormal = BlockMesh.normals[0];
+        FACE_NEG_Z.FaceNormal = BlockMesh.normals[8];
+        FACE_POS_X.FaceNormal = BlockMesh.normals[12];
+        FACE_NEG_X.FaceNormal = BlockMesh.normals[4];
+        FACE_POS_Y.FaceNormal = BlockMesh.normals[20];
+        FACE_NEG_Y.FaceNormal = BlockMesh.normals[16];
 
         // Assign vertexIndexContainer - these are the arrays indexes that hold vertices of the block. (One Time assignment)
         FACE_POS_Z.VertexIndexCon = new int[] { 0, 1, 2, 3 };
@@ -822,7 +817,7 @@ public class BlockPrim : MonoBehaviour {
     void OnGUI()
     {
         GUI.color = new Color(1f, 0.1f, 0f, 1f);
-        if (selected) GUI.Label(new Rect(20, 0, 220, 100), ("Selected Block ID: " + this.blockID));
+        if (Selected) GUI.Label(new Rect(20, 0, 220, 100), ("Selected Block ID: " + this.BlockId));
 
         GUI.color = new Color(1f, 0.5f, 0f, 1f);
         Vector3 mouseLoc = Manager.CHANGE_IN_MOUSE_LOC;
@@ -833,7 +828,7 @@ public class BlockPrim : MonoBehaviour {
 
         GUI.color = new Color(0.2f, 0.1f, 0.9f, 1f);
         //GUI.Label(new Rect(20, 35, 400, 100), ("BlockID: " + blockID));
-        Drawing.DrawLabel(FACE_POS_Y.FACE_CENTER_WORLD + new Vector3(0, 0.3f , 0), "BlockID: " + blockID);
+        Drawing.DrawLabel(FACE_POS_Y.FACE_CENTER_WORLD + new Vector3(0, 0.3f , 0), "BlockID: " + BlockId);
         //Vector2 scre = Camera.main.WorldToScreenPoint(FACE_POS_Y.FACE_CENTER_WORLD);
         //Vector2 scre2 = Camera.main.WorldToScreenPoint(FACE_POS_Y.FACE_CENTER_WORLD + new Vector3(0, 0.3f, 0));
         //Drawing.DrawLine(new Vector2(scre.x, Screen.height - scre.y), new Vector2(scre2.x, Screen.height - scre2.y), Color.red, 2);
